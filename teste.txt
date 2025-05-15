@@ -1,0 +1,5 @@
+imagem = foto jhdahdaj
+
+imagem do video = ReceberImagemVideo()
+
+imagm = imagem do video
