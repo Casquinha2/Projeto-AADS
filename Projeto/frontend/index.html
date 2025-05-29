@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>UALFlix</title>
+    <style>
+        .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center; /* vertically centers the elements */
+        padding: 20px;
+        padding-top: 5px;
+        margin-bottom: 50px;
+        }
+        
+        /* Optional styling for the button */
+        .header button {
+        padding: 10px 20px;
+        font-size: 16px;
+        }
+
+        body {
+            margin: 20px;
+        }
+        .option {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            cursor: pointer;
+        }
+        .option:hover {
+            background-color: #f5f5f5;
+        }
+        .img {
+            width: 200px;       /* Fixed width */
+            height: 200px;      /* Fixed height */
+            object-fit: cover;  /* Ensures the image covers the container, cropping if needed */
+            display: block;
+            margin: 0 auto;
+        }
+        #videos {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 3 equal columns */
+            gap: 100px 20px; /* 40px vertical gap (row) and 20px horizontal gap (column) */
+        }
+        /* Style the figure to center its contents */
+        #videos figure {
+            text-align: center;
+            margin: 0;
+        }
+        #videos figcaption {
+            margin-top: 15px; /* Space between the image and the title */
+        }
+    </style>
+
+</head>
+<body>
+
+    <div class="header">
+        <h1>UALFlix</h1>
+        <button onclick="window.location.href='admin.html';">Entrar em administrador</button>
+    </div>
+
+    <div id="videos"></div>
+    
+    
+    <script>
+
+        // This function dynamically creates a figure element for each item.
+        async function loadVideos() {
+            try {
+                // Replace '/api/videos' with your actual backend endpoint URL.
+                const response = await fetch('http://127.0.0.1:5000/api/video');
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                // Expecting an array of video dictionaries.
+                const videos = await response.json();
+
+                // Get the container element where the videos will be displayed.
+                const container = document.getElementById("videos");
+                container.innerHTML = ""; // Clear previous content
+
+                // Loop over each video in the list.
+                videos.forEach(video => {
+                    // Create a semantic container using <figure> and <figcaption>
+                    const figure = document.createElement("figure");
+                    figure.innerHTML = `
+                        <img src="${video.thumbnailUrl}" alt="${video.title}" class="img" onclick="openVideo('${video.title}')">
+                        <figcaption>
+                            <div class="video-title">${video.title}</div>
+                            <div class="video-duration">Duração: ${video.duration}</div>
+                        </figcaption>
+                    `;
+                    container.appendChild(figure);
+                });
+            } catch (error) {
+                console.error("Error loading videos:", error);
+            }
+        }
+
+        // Call loadVideos when the page loads
+        window.onload = loadVideos;
+    </script>
+</body>
+</html>

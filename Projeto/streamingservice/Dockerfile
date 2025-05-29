@@ -2,7 +2,9 @@ FROM python
 
 WORKDIR /app
 
-COPY . /app
+COPY streamingservice/main.py .
+
+COPY streamingservice/requirements.txt .
 
 RUN pip install -r requirements.txt
 

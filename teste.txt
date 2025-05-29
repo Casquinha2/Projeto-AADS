@@ -1,5 +1,33 @@
-imagem = foto jhdahdaj
+comandos necessarios para correr o projeto
 
-imagem do video = ReceberImagemVideo()
+(se modificar algo no frontend html)
+kubectl delete configmap frontend-html
+kubectl create configmap frontend-html --from-file=index.html=./frontend/index.html
 
-imagm = imagem do video
+(alguma mudanca no deployment)
+kubectl apply -f frontend-deployment.yaml
+kubectl apply -f frontend-service.yaml
+
+kubectl apply -f catalogservice-deployment.yaml
+kubectl apply -f catalogservice-service.yaml
+
+kubectl apply -f streamingservice-deployment.yaml
+kubectl apply -f streamingservice-service.yaml
+
+kubectl apply -f uploadservice-deployment.yaml
+kubectl apply -f uploadservice-service.yaml
+
+
+(no diretorio pricipal, temos que mudar os nomes para o diretorio certo)
+docker build -f streamingservice/Dockerfile -t streamingservice:v2 .
+minikube image load streamingservice:v2
+
+
+RUN!!
+
+kubectl port-forward service/catalogservice 5000:5000
+
+
+
+
+FALTA FAZER FUNCAO DE APAGAR VIDEOS, EDITAR VIDEOS, PAGINA PARA VER OS VIDEOS

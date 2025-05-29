@@ -2,7 +2,11 @@ FROM python
 
 WORKDIR /app
 
-COPY . /app
+COPY uploadservice/main.py .
+
+COPY uploadservice/requirements.txt .
+
+COPY shared/ ./shared/
 
 RUN pip install -r requirements.txt
 

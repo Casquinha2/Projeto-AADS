@@ -2,7 +2,11 @@ FROM python
 
 WORKDIR /app
 
-COPY . /app
+COPY catalogservice/main.py .
+
+COPY catalogservice/requirements.txt .
+
+COPY shared/ ./shared/
 
 RUN pip install -r requirements.txt
 

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Video</title>
+    <style>
+        /* General form styling */
+        .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center; /* vertically centers the elements */
+        padding: 20px;
+        padding-top: 5px;
+        margin-bottom: 50px;
+        }
+        
+        /* Optional styling for the button */
+        .header button {
+        padding: 10px 20px;
+        font-size: 16px;
+        }
+        body {
+            margin: 20px;
+        }
+
+        form {
+            width: 92%;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        form div {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="file"],
+        textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        /* Layout container divided into two columns */
+        #layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr; /* Duas colunas, uma o dobro da largura da outra */
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        /* Videos container styling */
+        #videos {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* 3 columns for video thumbnails */
+            gap: 20px;
+        }
+        /* Styling the figure element to center its contents */
+        #videos figure {
+            text-align: center;
+            margin: 0;
+        }
+        #videos figcaption {
+            margin-top: 15px;
+        }
+        #videos .buttonslayout{
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>UALFlix</h1>
+        <button onclick="window.location.href='admin.html';">Entrar em administrador</button>
+    </div>
+
+    <!-- Parent container with two columns -->
+    <div id="layout">
+        <!-- Left Column: Videos List -->
+        <div id="videosContainer">
+            <h2>Videos</h2>
+            <div id="videos"></div>
+        </div>
+        
+        <!-- Right Column: Upload Form -->
+        <div id="formContainer">
+            <h2>Upload Video</h2>
+            <form id="uploadForm" action="http://127.0.0.1:7000/api/upload" method="POST" enctype="multipart/form-data">
+                <div>
+                    <label for="title">Video Title:</label>
+                    <input type="text" name="title" id="title" placeholder="Enter the video title" required>
+                </div>
+                <div>
+                    <label for="thumbnail">Thumbnail Image:</label>
+                    <input type="file" name="thumbnail" id="thumbnail" accept="image/*" required>
+                </div>
+                <div>
+                    <label for="video">Video File (MP4):</label>
+                    <input type="file" name="video" id="video" accept="video/mp4" required>
+                </div>
+                <div>
+                    <label for="description">Description:</label>
+                    <textarea type="text" name="description" id="description" placeholder="Enter the video description"></textarea>
+                </div>
+                <div>
+                    <button type="submit">Upload Video</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        async function loadVideos() {
+            try {
+                // Replace '/api/videos' with your actual backend endpoint URL.
+                const response = await fetch('http://127.0.0.1:5000/api/video');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                // Expecting an array of video objects:
+                // [{ id, title, thumbnailUrl, videoUrl, duration, ... }, ... ]
+                const videos = await response.json();
+                
+                // Get the container element where the videos will be displayed.
+                const container = document.getElementById("videos");
+                container.innerHTML = ""; // Clear any previous content
+                
+                // Loop over each video in the data array
+                videos.forEach(video => {
+                    // Create a semantic container using <figure> and <figcaption>
+                    const figure = document.createElement("figure");
+                    figure.innerHTML = `
+                        <img src="${video.thumbnailUrl}" alt="${video.title}" class="img" onclick="openVideo('${video.title}')">
+                        <figcaption>
+                            <div class="video-title">${video.title}</div>
+                            <div class="video-duration">Duration: ${video.duration}</div>
+                            <div class="buttonslayout">
+                                <button onclick="editVideo()">Editar</button>
+                                <button onclick="deleteVideo()">Deletar</button>
+                            </div>
+                        </figcaption>
+                    `;
+                    container.appendChild(figure);
+                });
+            } catch (error) {
+                console.error("Error loading videos:", error);
+            }
+        }
+
+                // Intercept the form submission to use AJAX
+        document.getElementById("uploadForm").addEventListener("submit", async function(e) {
+            e.preventDefault(); // Prevent the default form submission (which would reload the page)
+            try {
+                const form = e.target;
+                const formData = new FormData(form);
+                const response = await fetch(form.action, {
+                    method: form.method,
+                    body: formData
+                });
+                if (!response.ok) {
+                    throw new Error("Upload failed");
+                }
+                const result = await response.json();
+                console.log("Upload result:", result);
+                // Once the upload is finished, refresh the videos list
+                loadVideos();
+                // Optionally, reset the form after successful submission
+                form.reset();
+            } catch (error) {
+                console.error("Error during form submission:", error);
+            }
+        });
+        
+        // Call loadVideos when the page loads
+        window.onload = loadVideos;
+    </script>
+</body>
+</html>
