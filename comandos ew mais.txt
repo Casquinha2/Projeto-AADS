@@ -26,6 +26,8 @@ minikube image load streamingservice:v2
 RUN!!
 
 kubectl port-forward service/catalogservice 5000:5000
+kubectl port-forward service/streamingservice 6000:6000
+kubectl port-forward service/uploadservice 7000:7000
 
 
 
