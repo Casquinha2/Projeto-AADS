@@ -1,7 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  creationTimestamp: null
   labels:
     app: streamingservice
   name: streamingservice
@@ -10,15 +9,16 @@ spec:
   selector:
     matchLabels:
       app: streamingservice
-  strategy: {}
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app: streamingservice
     spec:
       containers:
-      - image: streamingservice
+      - image: streamingservice:v1
         name: streamingservice
-        resources: {}
-status: {}
+        ports:
+        - containerPort: 6000
+        env:
+        - name: FLASK_ENV
+          value: "production"

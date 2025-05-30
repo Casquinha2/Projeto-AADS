@@ -1,2 +1,3 @@
 FROM nginx:alpine
-COPY frontend/index.html /usr/share/nginx/html/
+COPY index.html /usr/share/nginx/html/index.html
+COPY admin.html /usr/share/nginx/html/admin.html

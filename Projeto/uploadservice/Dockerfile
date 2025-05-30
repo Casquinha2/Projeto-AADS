@@ -2,14 +2,10 @@ FROM python
 
 WORKDIR /app
 
-COPY uploadservice/main.py .
+COPY main.py .
 
-COPY uploadservice/requirements.txt .
-
-COPY shared/ ./shared/
-
-RUN pip install -r requirements.txt
+RUN pip install flask flask-cors pymongo moviepy boto3
 
 EXPOSE 7000
 
-CMD ["python","app.py"]
+CMD ["python","main.py"]

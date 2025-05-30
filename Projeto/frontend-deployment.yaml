@@ -1,32 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  creationTimestamp: null
+  name: frontend
   labels:
     app: frontend
-  name: frontend
 spec:
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
       app: frontend
-  strategy: {}
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app: frontend
     spec:
       containers:
-      - image: nginx
-        name: nginx
+      - name: nginx
+        image: frontend:v1
         ports:
         - containerPort: 80
-        resources: {}
-      
-      volumes:
-      - name: html-volume
-        configMap:
-              name: frontend-html
-
-status: {}

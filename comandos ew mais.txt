@@ -22,7 +22,7 @@ kubectl apply -f mongodb.yaml
 
 (no diretorio pricipal, temos que mudar os nomes para o diretorio certo)
 
-docker build -f streamingservice/Dockerfile -t streamingservice:v1 .
+docker build -t streamingservice:v1 .
 minikube image load streamingservice:v1
 
 

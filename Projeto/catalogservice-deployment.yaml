@@ -1,7 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  creationTimestamp: null
   labels:
     app: catalogservice
   name: catalogservice
@@ -10,15 +9,16 @@ spec:
   selector:
     matchLabels:
       app: catalogservice
-  strategy: {}
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app: catalogservice
     spec:
       containers:
-      - image: catalogservice
+      - image: catalogservice:v1
         name: catalogservice
-        resources: {}
-status: {}
+        ports:
+        - containerPort: 5000
+        env:
+        - name: FLASK_ENV
+          value: "production"

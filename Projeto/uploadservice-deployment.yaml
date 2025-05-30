@@ -1,7 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  creationTimestamp: null
   labels:
     app: uploadservice
   name: uploadservice
@@ -10,15 +9,16 @@ spec:
   selector:
     matchLabels:
       app: uploadservice
-  strategy: {}
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app: uploadservice
     spec:
       containers:
-      - image: uploadservice
+      - image: uploadservice:v1
         name: uploadservice
-        resources: {}
-status: {}
+        ports:
+        - containerPort: 7000
+        env:
+        - name: FLASK_ENV
+          value: "production"

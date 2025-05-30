@@ -2,12 +2,10 @@ FROM python
 
 WORKDIR /app
 
-COPY streamingservice/main.py .
+COPY main.py .
 
-COPY streamingservice/requirements.txt .
-
-RUN pip install -r requirements.txt
+RUN pip install flask flask-cors pymongo
 
 EXPOSE 6000
 
-CMD ["python","app.py"]
+CMD ["python","main.py"]

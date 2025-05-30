@@ -3,7 +3,10 @@ import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import logging
-from shared.shared_config import videos_collection, AWS_S3_BUCKET, s3_client
+
+from pymongo import MongoClient
+import boto3
+
 
 from moviepy.editor import VideoFileClip
 
@@ -12,12 +15,16 @@ CORS(app)
 logging.basicConfig(level=logging.DEBUG)
 
 try:
-    videos_collection.find_one()
+    client = MongoClient('mongodb://admin:password123@mongodb:27017/')
+    db = client.videos_db
+    videos_collection = db.videos
     app.logger.info("Conectado à MongoDB com sucesso")
 except Exception as e:
     app.logger.error(f"Erro ao conectar à MongoDB: {e}")
 
 try:
+    AWS_S3_BUCKET = 'ualflix'
+    s3_client = boto3.client('s3', region_name='eu-west-3')
     s3_client.head_bucket(Bucket=AWS_S3_BUCKET)
     app.logger.info("Connected to S3 bucket successfully!")
 except Exception as e:

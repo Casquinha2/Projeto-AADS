@@ -1,7 +1,8 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from shared.shared_config import videos_collection, AWS_S3_BUCKET, s3_client
 import logging
+
+from pymongo import MongoClient
 
 app = Flask(__name__)
 CORS(app)  # Permitir CORS para todas as rotas
@@ -10,10 +11,13 @@ CORS(app)  # Permitir CORS para todas as rotas
 logging.basicConfig(level=logging.DEBUG)
 
 try:
-    videos_collection.find_one()
+    client = MongoClient('mongodb://admin:password123@mongodb:27017/')
+    db = client.videos_db
+    videos_collection = db.videos
     app.logger.info("Conectado à MongoDB com sucesso")
 except Exception as e:
     app.logger.error(f"Erro ao conectar à MongoDB: {e}")
+
 
 @app.route('/api/selected', methods=['GET'])
 def selected_Video():
