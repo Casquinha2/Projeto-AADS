@@ -17,10 +17,13 @@ kubectl apply -f streamingservice-service.yaml
 kubectl apply -f uploadservice-deployment.yaml
 kubectl apply -f uploadservice-service.yaml
 
+kubectl apply -f mongodb.yaml
+
 
 (no diretorio pricipal, temos que mudar os nomes para o diretorio certo)
-docker build -f streamingservice/Dockerfile -t streamingservice:v2 .
-minikube image load streamingservice:v2
+
+docker build -f streamingservice/Dockerfile -t streamingservice:v1 .
+minikube image load streamingservice:v1
 
 
 RUN!!
@@ -33,3 +36,6 @@ kubectl port-forward service/uploadservice 7000:7000
 
 
 FALTA FAZER FUNCAO DE APAGAR VIDEOS, EDITAR VIDEOS, PAGINA PARA VER OS VIDEOS
+
+
+ADICIONAR EM TODOS OS YAML DEPLOYMENT DOS SERVICE O "FOLFER"/"NAME"SERVICE:v1
