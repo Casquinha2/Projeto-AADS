@@ -1,10 +1,11 @@
-FROM python
+FROM python:3.8-slim
 
 WORKDIR /app
 
 COPY main.py .
 
-RUN pip install flask flask-cors pymongo moviepy boto3
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
 EXPOSE 7000
 

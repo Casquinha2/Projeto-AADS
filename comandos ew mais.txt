@@ -1,3 +1,9 @@
+Para correr projeto fazer primeiro o minikube start, depois criar o configmap
+depois todos os apply (sem mongo), depois o docker build e minikube image load de tudo (nas respetivaas pastas),
+depois fazer kubectl create namespace e apply do mongo (na pasta original)
+
+
+
 comandos necessarios para correr o projeto
 
 (se modificar algo no frontend html)
@@ -20,7 +26,7 @@ kubectl apply -f uploadservice-service.yaml
 kubectl apply -f mongodb.yaml
 
 
-(no diretorio pricipal, temos que mudar os nomes para o diretorio certo)
+(no diretorio dos servicos)
 
 docker build -t streamingservice:v1 .
 minikube image load streamingservice:v1
@@ -36,6 +42,3 @@ kubectl port-forward service/uploadservice 7000:7000
 
 
 FALTA FAZER FUNCAO DE APAGAR VIDEOS, EDITAR VIDEOS, PAGINA PARA VER OS VIDEOS
-
-
-ADICIONAR EM TODOS OS YAML DEPLOYMENT DOS SERVICE O "FOLFER"/"NAME"SERVICE:v1
