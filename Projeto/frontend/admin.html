@@ -81,7 +81,7 @@
 <body>
     <div class="header">
         <h1>UALFlix</h1>
-        <button onclick="window.location.href='index.html';">Sair de administrador</button>
+        <button onclick="window.location.href='/index.html';">Sair de administrador</button>
     </div>
 
     <!-- Parent container with two columns -->
@@ -95,7 +95,7 @@
         <!-- Right Column: Upload Form -->
         <div id="formContainer">
             <h2>Upload Video</h2>
-            <form id="uploadForm" action="http://127.0.0.1:7000/api/upload" method="POST" enctype="multipart/form-data">
+            <form id="uploadForm" method="POST" enctype="multipart/form-data" action="http://127.0.0.1:7000/api/upload">
                 <div>
                     <label for="title">Video Title:</label>
                     <input type="text" name="title" id="title" placeholder="Enter the video title" required>
@@ -157,31 +157,6 @@
             }
         }
 
-                // Intercept the form submission to use AJAX
-        document.getElementById("uploadForm").addEventListener("submit", async function(e) {
-            e.preventDefault(); // Prevent the default form submission (which would reload the page)
-            try {
-                const form = e.target;
-                const formData = new FormData(form);
-                const response = await fetch(form.action, {
-                    method: form.method,
-                    body: formData
-                });
-                if (!response.ok) {
-                    throw new Error("Upload failed");
-                }
-                const result = await response.json();
-                console.log("Upload result:", result);
-                // Once the upload is finished, refresh the videos list
-                loadVideos();
-                // Optionally, reset the form after successful submission
-                form.reset();
-            } catch (error) {
-                console.error("Error during form submission:", error);
-            }
-        });
-        
-        // Call loadVideos when the page loads
         window.onload = loadVideos;
     </script>
 </body>

@@ -10,8 +10,11 @@ import boto3
 
 from moviepy.editor import VideoFileClip
 
+import logging
+
 app = Flask(__name__)
 CORS(app)
+
 logging.basicConfig(level=logging.DEBUG)
 
 try:
@@ -22,13 +25,13 @@ try:
 except Exception as e:
     app.logger.error(f"Erro ao conectar à MongoDB: {e}")
 
-try:
+'''try:
     AWS_S3_BUCKET = 'ualflix'
     s3_client = boto3.client('s3', region_name='eu-west-3')
     s3_client.head_bucket(Bucket=AWS_S3_BUCKET)
     app.logger.info("Connected to S3 bucket successfully!")
 except Exception as e:
-    app.logger.info(f"Error connecting to S3 bucket: {e}")
+    app.logger.info(f"Error connecting to S3 bucket: {e}")'''
 
 
 @app.route('/api/upload', methods=['POST'])
@@ -38,52 +41,56 @@ def upload_video():
         thumbnailfile = request.files.get('thumbnail')
         videofile = request.files.get('video')
         description = request.form.get('description')
+    except:
+        return jsonify({'status': 'error', 'message': 'Erro ao carregar os dados'}), 500
 
-        if not title or not thumbnailfile or not videofile:
-            return jsonify({'status': 'error', 'message': 'Dados não fornecidos'}), 400
-        
-        video_filename = videofile.filename
-        temp_video_path = os.path.join("/tmp", video_filename)
-        
-        # Save the uploaded video temporarily.
+
+    if not title or not thumbnailfile or not videofile:
+        return jsonify({
+                    "status": "error",
+                    "message": f"Dados não fornecidos. Title: {title}, Description: {description}"
+                }), 400
+
+    
+    video_filename = videofile.filename
+    temp_video_path = os.path.join("/tmp", video_filename)
+    
+    try:
         videofile.save(temp_video_path)
-        
-        # Retrieve the duration.
         duration = get_video_duration(temp_video_path)
+    except Exception as e:
+        app.logger.error(f"Erro ao obter duração do vídeo: {e}")
+        return jsonify({'status': 'error', 'message': 'Erro ao processar o vídeo'}), 500
 
-        os.remove(temp_video_path)
 
-        thumbnailkey = thumbnailfile.filename
+    '''os.remove(temp_video_path)'''
 
-        #upload da thumbnail na s3 da AWS
-        s3_client.upload_fileobj(
-            thumbnailfile, AWS_S3_BUCKET, thumbnailkey,
-            ExtraArgs={'ContentType': thumbnailfile.content_type, 'ACL': 'public_read'}
-        )
-        thumbnailurl = f"https://{AWS_S3_BUCKET}.s3.amazonaws.com/{thumbnailkey}"
+    '''thumbnailkey = thumbnailfile.filename
 
-        videokey = videofile.filename
+    #upload da thumbnail na s3 da AWS
+    s3_client.upload_fileobj(thumbnailfile, AWS_S3_BUCKET, thumbnailkey)
 
-        s3_client.upload_fileobj(
-            videofile, AWS_S3_BUCKET, videokey,
-            ExtraArgs={'ContentType': videofile.content_type, 'ACL': 'public_read'}
-        )
-        videourl = f"https://{AWS_S3_BUCKET}.s3.amazonaws.com/{videokey}"
+    thumbnailurl = f"https://{AWS_S3_BUCKET}.s3.amazonaws.com/{thumbnailkey}"
 
+    videokey = videofile.filename
+
+    s3_client.upload_fileobj(videofile, AWS_S3_BUCKET, videokey)
+
+    videourl = f"https://{AWS_S3_BUCKET}.s3.amazonaws.com/{videokey}"'''
+
+    try:
         videos_collection.insert_one({
         "title": title,
-        "thumbnailurl": thumbnailurl,
-        "videourl": videourl,
+        "thumbnailurl": "CERTOTHUMB",
+        "videourl": "CERTOVIDEO",
         "description": description,
         "duration": duration
         })
-
-        app.logger.info(f"Upload acabado")
-        return jsonify({'status': 'success', 'message': 'Upload do video com sucesso'})
-            
     except Exception as e:
-        app.logger.error(f"Erro ao dar upload do video: {e}")
-        return jsonify({'status': 'error', 'message': 'Erro interno do servidor'}), 500
+        return jsonify({'status': 'error', 'message': 'Erro ao adicionar os dados na DB'}, 500)
+
+    app.logger.info(f"Upload acabado")
+    return jsonify({'status': 'success', 'message': 'Upload do video com sucesso'})
 
 
 @app.route('/health', methods=['GET'])
@@ -113,4 +120,4 @@ def get_video_duration(video_path):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=7000, debug=False)
+    app.run(host='0.0.0.0', port=7000, debug=True)

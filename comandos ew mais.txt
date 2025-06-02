@@ -28,7 +28,7 @@ kubectl apply -f mongodb.yaml
 
 (no diretorio dos servicos)
 
-docker build -t streamingservice:v1 .
+docker build --no-cache -t streamingservice:v1 .
 minikube image load streamingservice:v1
 
 
@@ -42,3 +42,5 @@ kubectl port-forward service/uploadservice 7000:7000
 
 
 FALTA FAZER FUNCAO DE APAGAR VIDEOS, EDITAR VIDEOS, PAGINA PARA VER OS VIDEOS
+
+URGENTE, FORM DE UPLOAD NAO ESTA A ENVIAR OS FICHEIROS PARA O BACKEND
