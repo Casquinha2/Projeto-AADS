@@ -98,19 +98,19 @@
             <form id="uploadForm" method="POST" enctype="multipart/form-data" action="http://127.0.0.1:7000/api/upload">
                 <div>
                     <label for="title">Video Title:</label>
-                    <input type="text" name="title" id="title" placeholder="Enter the video title" required>
+                    <input type="text" name="title"  placeholder="Enter the video title" required>
                 </div>
                 <div>
                     <label for="thumbnail">Thumbnail Image:</label>
-                    <input type="file" name="thumbnail" id="thumbnail" accept="image/*" required>
+                    <input type="file" name="thumbnail"  accept="image/*" >
                 </div>
                 <div>
                     <label for="video">Video File (MP4):</label>
-                    <input type="file" name="video" id="video" accept="video/mp4" required>
+                    <input type="file" name="video"  accept="video/mp4" >
                 </div>
                 <div>
                     <label for="description">Description:</label>
-                    <textarea type="text" name="description" id="description" placeholder="Enter the video description"></textarea>
+                    <input type="text" name="description"  placeholder="Enter the video description"></input>
                 </div>
                 <div>
                     <button type="submit">Upload Video</button>

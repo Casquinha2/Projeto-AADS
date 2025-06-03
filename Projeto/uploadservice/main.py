@@ -25,54 +25,70 @@ try:
 except Exception as e:
     app.logger.error(f"Erro ao conectar à MongoDB: {e}")
 
-'''try:
+try:
     AWS_S3_BUCKET = 'ualflix'
     s3_client = boto3.client('s3', region_name='eu-west-3')
     s3_client.head_bucket(Bucket=AWS_S3_BUCKET)
     app.logger.info("Connected to S3 bucket successfully!")
 except Exception as e:
-    app.logger.info(f"Error connecting to S3 bucket: {e}")'''
+    app.logger.info(f"Error connecting to S3 bucket: {e}")
 
 
 @app.route('/api/upload', methods=['POST'])
 def upload_video():
     try:
+        app.logger.info("Form data:", request.form)
+        app.logger.info("Files data:", request.files)
+        
         title = request.form.get('title')
+        description = request.form.get('description')
         thumbnailfile = request.files.get('thumbnail')
         videofile = request.files.get('video')
-        description = request.form.get('description')
+        
+        app.logger.info("title:", title)
+        app.logger.info("description:", description)
+        app.logger.info("thumbnail:", thumbnailfile)
+        
     except:
         return jsonify({'status': 'error', 'message': 'Erro ao carregar os dados'}), 500
 
 
-    if not title or not thumbnailfile or not videofile:
+    if title == None or description == None:
         return jsonify({
                     "status": "error",
                     "message": f"Dados não fornecidos. Title: {title}, Description: {description}"
                 }), 400
 
     
-    video_filename = videofile.filename
-    temp_video_path = os.path.join("/tmp", video_filename)
     
-    try:
-        videofile.save(temp_video_path)
-        duration = get_video_duration(temp_video_path)
+    
+    '''try:
+        if video_filename != None:
+            video_filename = videofile.filename
+            temp_video_path = os.path.join("/tmp", video_filename)
+            videofile.save(temp_video_path)
+            duration = get_video_duration(temp_video_path)
+        else:
+            pass
     except Exception as e:
         app.logger.error(f"Erro ao obter duração do vídeo: {e}")
-        return jsonify({'status': 'error', 'message': 'Erro ao processar o vídeo'}), 500
+        return jsonify({'status': 'error', 'message': 'Erro ao processar o vídeo'}), 500'''
 
 
     '''os.remove(temp_video_path)'''
 
-    '''thumbnailkey = thumbnailfile.filename
+    try:
+        thumbnailkey = thumbnailfile.filename
 
-    #upload da thumbnail na s3 da AWS
-    s3_client.upload_fileobj(thumbnailfile, AWS_S3_BUCKET, thumbnailkey)
+        #upload da thumbnail na s3 da AWS
+        s3_client.upload_fileobj(thumbnailfile, AWS_S3_BUCKET, thumbnailkey)
 
-    thumbnailurl = f"https://{AWS_S3_BUCKET}.s3.amazonaws.com/{thumbnailkey}"
+        thumbnailurl = f"https://{AWS_S3_BUCKET}.s3.amazonaws.com/{thumbnailkey}"
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': 
+                        f'Erro ao adicionar a thumb no bucket s3: {e}'}, 500)
 
-    videokey = videofile.filename
+    '''videokey = videofile.filename
 
     s3_client.upload_fileobj(videofile, AWS_S3_BUCKET, videokey)
 
@@ -81,16 +97,17 @@ def upload_video():
     try:
         videos_collection.insert_one({
         "title": title,
-        "thumbnailurl": "CERTOTHUMB",
+        "thumbnailurl": thumbnailurl,
         "videourl": "CERTOVIDEO",
         "description": description,
-        "duration": duration
+        "duration": "5"
         })
     except Exception as e:
         return jsonify({'status': 'error', 'message': 'Erro ao adicionar os dados na DB'}, 500)
 
     app.logger.info(f"Upload acabado")
-    return jsonify({'status': 'success', 'message': 'Upload do video com sucesso'})
+    return jsonify({'status': 'success', 'message': 
+                    f'Upload do video com sucesso: {videos_collection.find_one({"title": title})}'})
 
 
 @app.route('/health', methods=['GET'])

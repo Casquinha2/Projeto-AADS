@@ -23,7 +23,8 @@ kubectl apply -f streamingservice-service.yaml
 kubectl apply -f uploadservice-deployment.yaml
 kubectl apply -f uploadservice-service.yaml
 
-kubectl apply -f mongodb.yaml
+
+
 
 
 (no diretorio dos servicos)
@@ -31,12 +32,19 @@ kubectl apply -f mongodb.yaml
 docker build --no-cache -t streamingservice:v1 .
 minikube image load streamingservice:v1
 
+(diretorio principal)
+
+kubectl create namespace monitorar
+kubectl apply -f mongodb.yaml
+
 
 RUN!!
 
 kubectl port-forward service/catalogservice 5000:5000
 kubectl port-forward service/streamingservice 6000:6000
 kubectl port-forward service/uploadservice 7000:7000
+
+minikube service frontend
 
 
 
