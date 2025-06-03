@@ -95,7 +95,7 @@
         <!-- Right Column: Upload Form -->
         <div id="formContainer">
             <h2>Upload Video</h2>
-            <form id="uploadForm" method="POST" enctype="multipart/form-data" action="http://127.0.0.1:7000/api/upload">
+            <form id="uploadForm" method="POST" enctype="multipart/form-data" onsubmit="upload(event)">
                 <div>
                     <label for="title">Video Title:</label>
                     <input type="text" name="title"  placeholder="Enter the video title" required>
@@ -155,6 +155,24 @@
             } catch (error) {
                 console.error("Error loading videos:", error);
             }
+        }
+
+        function upload(event) {
+            event.preventDefault(); // Prevents the default form submission
+            
+            // Create a FormData object from the form
+            const form = document.getElementById('uploadForm');
+            const formData = new FormData(form);
+
+            // Send the form data using fetch to the /api/upload endpoint
+            fetch('http://127.0.0.1:7000/api/upload', {
+            method: 'POST',
+            body: formData  // Let the browser set the proper Content-Type header
+            })
+            .then(response => response.json())
+            .catch((error) => {
+            console.error('Error:', error);
+            });
         }
 
         window.onload = loadVideos;

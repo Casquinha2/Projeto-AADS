@@ -27,7 +27,12 @@ except Exception as e:
 
 try:
     AWS_S3_BUCKET = 'ualflix'
-    s3_client = boto3.client('s3', region_name='eu-west-3')
+    s3_client = boto3.client(
+        's3',
+        aws_access_key_id='AKIARWHN5DKOOJPQ2CVG',
+        aws_secret_access_key='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',
+        region_name='eu-west-3'
+    )
     s3_client.head_bucket(Bucket=AWS_S3_BUCKET)
     app.logger.info("Connected to S3 bucket successfully!")
 except Exception as e:
@@ -37,45 +42,44 @@ except Exception as e:
 @app.route('/api/upload', methods=['POST'])
 def upload_video():
     try:
-        app.logger.info("Form data:", request.form)
-        app.logger.info("Files data:", request.files)
         
         title = request.form.get('title')
         description = request.form.get('description')
-        thumbnailfile = request.files.get('thumbnail')
-        videofile = request.files.get('video')
-        
-        app.logger.info("title:", title)
-        app.logger.info("description:", description)
-        app.logger.info("thumbnail:", thumbnailfile)
+        thumbnailfile = request.files['thumbnail']
+        videofile = request.files['video']
         
     except:
         return jsonify({'status': 'error', 'message': 'Erro ao carregar os dados'}), 500
 
 
-    if title == None or description == None:
+    if not title or not thumbnailfile or not videofile:
         return jsonify({
                     "status": "error",
                     "message": f"Dados não fornecidos. Title: {title}, Description: {description}"
                 }), 400
 
+    try:
+        
+        s3_client.head_bucket(Bucket=AWS_S3_BUCKET)
+    except Exception as e:
+        return jsonify("erro ao conectao ao s3: {e}")
     
     
-    
-    '''try:
+    try:
         if video_filename != None:
             video_filename = videofile.filename
             temp_video_path = os.path.join("/tmp", video_filename)
             videofile.save(temp_video_path)
             duration = get_video_duration(temp_video_path)
+            os.remove(temp_video_path)
         else:
             pass
     except Exception as e:
         app.logger.error(f"Erro ao obter duração do vídeo: {e}")
-        return jsonify({'status': 'error', 'message': 'Erro ao processar o vídeo'}), 500'''
+        return jsonify({'status': 'error', 'message': 'Erro ao processar o vídeo'}), 500
 
 
-    '''os.remove(temp_video_path)'''
+    
 
     try:
         thumbnailkey = thumbnailfile.filename
@@ -88,24 +92,30 @@ def upload_video():
         return jsonify({'status': 'error', 'message': 
                         f'Erro ao adicionar a thumb no bucket s3: {e}'}, 500)
 
-    '''videokey = videofile.filename
+    try:
 
-    s3_client.upload_fileobj(videofile, AWS_S3_BUCKET, videokey)
+        videokey = videofile.filename
 
-    videourl = f"https://{AWS_S3_BUCKET}.s3.amazonaws.com/{videokey}"'''
+        s3_client.upload_fileobj(videofile, AWS_S3_BUCKET, videokey)
+
+        videourl = f"https://{AWS_S3_BUCKET}.s3.amazonaws.com/{videokey}"
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': 
+                        f'Erro ao adicionar a video no bucket s3: {e}'}, 500)
 
     try:
         videos_collection.insert_one({
         "title": title,
         "thumbnailurl": thumbnailurl,
-        "videourl": "CERTOVIDEO",
+        "videourl": videourl,
         "description": description,
-        "duration": "5"
+        "duration": duration
         })
     except Exception as e:
         return jsonify({'status': 'error', 'message': 'Erro ao adicionar os dados na DB'}, 500)
 
     app.logger.info(f"Upload acabado")
+    
     return jsonify({'status': 'success', 'message': 
                     f'Upload do video com sucesso: {videos_collection.find_one({"title": title})}'})
 
