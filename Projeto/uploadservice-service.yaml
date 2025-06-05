@@ -13,6 +13,6 @@ spec:
     targetPort: 7000
   selector:
     app: uploadservice
-  type: ClusterIP
+  type: NodePort
 status:
   loadBalancer: {}

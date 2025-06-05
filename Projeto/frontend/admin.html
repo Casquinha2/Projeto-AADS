@@ -1,27 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Upload Video</title>
+    <title>UalFlix</title>
     <style>
         /* General form styling */
         .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center; /* vertically centers the elements */
-        padding: 20px;
-        padding-top: 5px;
-        margin-bottom: 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center; /* verticalmente centra os elementos */
+            padding: 20px;
+            padding-top: 5px;
+            margin-bottom: 50px;
         }
-        
         /* Optional styling for the button */
         .header button {
-        padding: 10px 20px;
-        font-size: 16px;
+            padding: 10px 20px;
+            font-size: 16px;
         }
         body {
             margin: 20px;
         }
-
         form {
             width: 92%;
             padding: 20px;
@@ -49,19 +47,17 @@
             font-size: 16px;
             cursor: pointer;
         }
-        
         /* Layout container divided into two columns */
         #layout {
             display: grid;
-            grid-template-columns: 2fr 1fr; /* Duas colunas, uma o dobro da largura da outra */
+            grid-template-columns: 2fr 1fr; /* duas colunas, uma o dobro da largura da outra */
             gap: 20px;
             padding: 20px;
         }
-        
         /* Videos container styling */
         #videos {
             display: grid;
-            grid-template-columns: repeat(2, 1fr); /* 3 columns for video thumbnails */
+            grid-template-columns: repeat(2, 1fr); /* duas colunas para os thumbnails */
             gap: 20px;
         }
         /* Styling the figure element to center its contents */
@@ -72,7 +68,7 @@
         #videos figcaption {
             margin-top: 15px;
         }
-        #videos .buttonslayout{
+        #videos .buttonslayout {
             display: grid;
             grid-template-columns: 1fr 1fr;
         }
@@ -80,7 +76,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>UALFlix</h1>
+        <h1>Painel de Administrador</h1>
         <button onclick="window.location.href='/index.html';">Sair de administrador</button>
     </div>
 
@@ -88,7 +84,7 @@
     <div id="layout">
         <!-- Left Column: Videos List -->
         <div id="videosContainer">
-            <h2>Videos</h2>
+            <h2>Vídeos</h2>
             <div id="videos"></div>
         </div>
         
@@ -98,55 +94,57 @@
             <form id="uploadForm" method="POST" enctype="multipart/form-data" onsubmit="upload(event)">
                 <div>
                     <label for="title">Video Title:</label>
-                    <input type="text" name="title"  placeholder="Enter the video title" required>
+                    <input type="text" name="title" placeholder="Enter the video title" required>
                 </div>
                 <div>
                     <label for="thumbnail">Thumbnail Image:</label>
-                    <input type="file" name="thumbnail"  accept="image/*" >
+                    <input type="file" name="thumbnail" accept="image/*">
                 </div>
                 <div>
                     <label for="video">Video File (MP4):</label>
-                    <input type="file" name="video"  accept="video/mp4" >
+                    <input type="file" name="video" accept="video/mp4">
                 </div>
                 <div>
                     <label for="description">Description:</label>
-                    <input type="text" name="description"  placeholder="Enter the video description"></input>
+                    <input type="text" name="description" placeholder="Enter the video description">
                 </div>
                 <div>
                     <button type="submit">Upload Video</button>
                 </div>
             </form>
         </div>
+
+        <!-- Elemento para mensagens de feedback (upload, erros, etc.) -->
+        <div id="message"></div>
     </div>
     
     <script>
         async function loadVideos() {
             try {
-                // Replace '/api/videos' with your actual backend endpoint URL.
+                // Altere a URL de acordo com o seu backend se necessário.
                 const response = await fetch('http://127.0.0.1:5000/api/video');
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                // Expecting an array of video objects:
-                // [{ id, title, thumbnailUrl, videoUrl, duration, ... }, ... ]
+                // Espera receber um array de objetos de vídeo.
                 const videos = await response.json();
                 
-                // Get the container element where the videos will be displayed.
+                // Seleciona o container onde os vídeos serão exibidos.
                 const container = document.getElementById("videos");
-                container.innerHTML = ""; // Clear any previous content
+                container.innerHTML = ""; // Limpa qualquer conteúdo anterior
                 
-                // Loop over each video in the data array
+                // Loop sobre cada vídeo e cria seu elemento HTML.
                 videos.forEach(video => {
-                    // Create a semantic container using <figure> and <figcaption>
+                    // Cria um <figure> para cada vídeo, incluindo thumbnail, título e duração.
                     const figure = document.createElement("figure");
                     figure.innerHTML = `
-                        <img src="${video.thumbnailUrl}" alt="${video.title}" class="img" onclick="openVideo('${video.title}')">
+                        <img src="${video.thumbnailfile}" alt="${video.title}" class="img" onclick="openVideo('${video.title}')">
                         <figcaption>
                             <div class="video-title">${video.title}</div>
                             <div class="video-duration">Duration: ${video.duration}</div>
                             <div class="buttonslayout">
-                                <button onclick="editVideo()">Editar</button>
-                                <button onclick="deleteVideo()">Deletar</button>
+                                <button onclick="editVideo('${video._id || video.title}')">Editar</button>
+                                <button onclick="deleteVideo('${video._id || video.title}')">Deletar</button>
                             </div>
                         </figcaption>
                     `;
@@ -158,29 +156,50 @@
         }
 
         function upload(event) {
-            event.preventDefault(); // Prevents the default form submission
-            
-            // Create a FormData object from the form
-            const form = document.getElementById('uploadForm');
+            event.preventDefault(); // Previne o envio padrão do formulário
+
+            // Cria um objeto FormData a partir do formulário.
+            const form = document.getElementById("uploadForm");
             const formData = new FormData(form);
 
-            // Send the form data using fetch to the /api/upload endpoint
-            fetch('http://127.0.0.1:7000/api/upload', {
-            method: 'POST',
-            body: formData  // Let the browser set the proper Content-Type header
+            // Envia os dados do formulário para o endpoint /api/upload.
+            fetch("http://127.0.0.1:7000/api/upload", {
+                method: "POST",
+                body: formData,
             })
-            .then(response => response.json())
-            .then(data => {
-            console.log('Success:', data);
-            // Optionally, update the UI based on server response
+            .then((response) => response.json())
+            .then((data) => {
+                const messageDiv = document.getElementById("message");
+                if (data.status && data.status === "error") {
+                    messageDiv.innerHTML = `<p style="color: red;">Erro: ${data.message}</p>`;
+                } else {
+                    messageDiv.innerHTML = `<p style="color: green;">Upload realizado com sucesso!</p>`;
+                }
+                console.log("Resposta do servidor:", data);
             })
             .catch((error) => {
-            console.error('Error:', error);
+                console.error("Erro:", error);
+                const messageDiv = document.getElementById("message");
+                messageDiv.innerHTML = `<p style="color: red;">Ocorreu um erro no upload. Tente novamente.</p>`;
             });
         }
 
-        window.onload = loadVideos;
-        
+        // Implementações simples para as funções de ação (você pode aprimorá-las conforme necessário).
+        function openVideo(videoIdentifier) {
+            console.log("Abrir vídeo:", videoIdentifier);
+            // Exemplo: abrir em uma nova página ou modal.
+        }
+        function editVideo(videoIdentifier) {
+            console.log("Editar vídeo:", videoIdentifier);
+            // Implementar lógica de edição.
+        }
+        function deleteVideo(videoIdentifier) {
+            console.log("Deletar vídeo:", videoIdentifier);
+            // Implementar lógica para deletar o vídeo.
+        }
+
+        // Chama loadVideos quando o DOM estiver completamente carregado.
+        document.addEventListener("DOMContentLoaded", loadVideos);
     </script>
 </body>
 </html>

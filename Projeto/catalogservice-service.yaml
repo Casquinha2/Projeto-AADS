@@ -13,6 +13,6 @@ spec:
     targetPort: 5000
   selector:
     app: catalogservice
-  type: ClusterIP
+  type: NodePort
 status:
   loadBalancer: {}
