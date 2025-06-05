@@ -41,6 +41,8 @@ except Exception as e:
 
 @app.route('/api/upload', methods=['POST'])
 def upload_video():
+    response={}
+
     try:
         
         title = request.form.get('title')
@@ -48,8 +50,15 @@ def upload_video():
         thumbnailfile = request.files['thumbnail']
         videofile = request.files['video']
         
+        response['text'] = f'title = {title}; description = {description}'
+        response['file'] = f'video = {videofile.filename}; thumb = {thumbnailfile.filename}'
+
     except:
-        return jsonify({'status': 'error', 'message': 'Erro ao carregar os dados'}), 500
+
+        response['text'] = f'Erro nos textos'
+        response['file'] = f'Erro nos ficheiros'
+
+        return jsonify(response)
 
 
     if not title or not thumbnailfile or not videofile:
@@ -59,27 +68,30 @@ def upload_video():
                 }), 400
 
     try:
-        
         s3_client.head_bucket(Bucket=AWS_S3_BUCKET)
     except Exception as e:
-        return jsonify("erro ao conectao ao s3: {e}")
+        response['s3']='nao conectado na s3'
+        return jsonify(response)
     
     
     try:
-        if video_filename != None:
-            video_filename = videofile.filename
-            temp_video_path = os.path.join("/tmp", video_filename)
-            videofile.save(temp_video_path)
-            duration = get_video_duration(temp_video_path)
-            os.remove(temp_video_path)
-        else:
-            pass
+        video_filename != None
+        video_filename = videofile.filename
+        temp_video_path = os.path.join("/tmp", video_filename)
+        videofile.save(temp_video_path)
+        duration = get_video_duration(temp_video_path)
+        os.remove(temp_video_path)
+
+        response['duration'] = 'carregado com duracao'
+
     except Exception as e:
+        response['duration'] - 'nao conseguio duracao'
+
         app.logger.error(f"Erro ao obter duração do vídeo: {e}")
-        return jsonify({'status': 'error', 'message': 'Erro ao processar o vídeo'}), 500
+        return jsonify(response)
 
 
-    
+
 
     try:
         thumbnailkey = thumbnailfile.filename
@@ -88,9 +100,13 @@ def upload_video():
         s3_client.upload_fileobj(thumbnailfile, AWS_S3_BUCKET, thumbnailkey)
 
         thumbnailurl = f"https://{AWS_S3_BUCKET}.s3.amazonaws.com/{thumbnailkey}"
+
+        response['s3thumb'] = 'thumb upload'
     except Exception as e:
-        return jsonify({'status': 'error', 'message': 
-                        f'Erro ao adicionar a thumb no bucket s3: {e}'}, 500)
+        response['s3thumb'] = 'nao ocurrou upload da thumb'
+
+        return jsonify(response)
+
 
     try:
 
@@ -99,9 +115,13 @@ def upload_video():
         s3_client.upload_fileobj(videofile, AWS_S3_BUCKET, videokey)
 
         videourl = f"https://{AWS_S3_BUCKET}.s3.amazonaws.com/{videokey}"
+
+        response['s3video'] = 'video upload'
     except Exception as e:
-        return jsonify({'status': 'error', 'message': 
-                        f'Erro ao adicionar a video no bucket s3: {e}'}, 500)
+        response['s3video'] = 'nao ocorreu o upload do video'
+        return jsonify(response)
+    
+
 
     try:
         videos_collection.insert_one({
@@ -116,8 +136,7 @@ def upload_video():
 
     app.logger.info(f"Upload acabado")
     
-    return jsonify({'status': 'success', 'message': 
-                    f'Upload do video com sucesso: {videos_collection.find_one({"title": title})}'})
+    return jsonify(response)
 
 
 @app.route('/health', methods=['GET'])

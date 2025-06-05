@@ -170,12 +170,17 @@
             body: formData  // Let the browser set the proper Content-Type header
             })
             .then(response => response.json())
+            .then(data => {
+            console.log('Success:', data);
+            // Optionally, update the UI based on server response
+            })
             .catch((error) => {
             console.error('Error:', error);
             });
         }
 
         window.onload = loadVideos;
+        
     </script>
 </body>
 </html>
