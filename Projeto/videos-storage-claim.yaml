@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: videos-storage-claim
+spec:
+  accessModes:
+    - ReadWriteMany  # Ajuste conforme a necessidade do seu caso
+  resources:
+    requests:
+      storage: 10Gi

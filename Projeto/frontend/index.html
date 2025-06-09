@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+
     <title>UALFlix</title>
     <style>
         .header {
@@ -56,7 +58,7 @@
 <body>
 
     <div class="header">
-        <h1>TESTE</h1>
+        <h1>UalFlix</h1>
         <button onclick="window.location.href='/admin.html';">Entrar em administrador</button>
     </div>
 
@@ -67,37 +69,7 @@
 
         // This function dynamically creates a figure element for each item.
         async function loadVideos() {
-            try {
-                // Replace '/api/videos' with your actual backend endpoint URL.
-                const response = await fetch('http://127.0.0.1:5000/api/video');
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                // Expecting an array of video dictionaries.
-                const videos = await response.json();
-
-                // Get the container element where the videos will be displayed.
-                const container = document.getElementById("videos");
-                container.innerHTML = ""; // Clear previous content
-
-                // Loop over each video in the list.
-                videos.forEach(video => {
-                    // Create a semantic container using <figure> and <figcaption>
-                    const figure = document.createElement("figure");
-                    figure.innerHTML = `
-                        <img src="${video.thumbnailUrl}" alt="${video.title}" class="img" onclick="openVideo('${video.title}')">
-                        <figcaption>
-                            <div class="video-title">${video.title}</div>
-                            <div class="video-duration">Duração: ${video.duration}</div>
-                        </figcaption>
-                    `;
-                    container.appendChild(figure);
-                });
-            } catch (error) {
-                console.error("Error loading videos:", error);
-            }
+            
         }
 
         // Call loadVideos when the page loads

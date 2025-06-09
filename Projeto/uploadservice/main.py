@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import logging
 from pymongo import MongoClient
@@ -20,7 +20,6 @@ try:
 except Exception as e:
     app.logger.error(f"Erro ao conectar à MongoDB: {e}")
 
-
 @app.route('/api/upload', methods=['POST'])
 def upload_video():
     try:
@@ -36,23 +35,38 @@ def upload_video():
                 "message": f"Dados não fornecidos. Title: {title}, Description: {description}"
             }), 400
 
-        # Exemplo de salvamento temporário para obter a duração do vídeo
-        video_filename = videofile.filename
-        temp_video_path = os.path.join("/tmp", video_filename)
-        videofile.save(temp_video_path)
-        duration = get_video_duration(temp_video_path)
-        os.remove(temp_video_path)
+        # Define caminhos absolutos baseados no diretório atual
+        video_folder =  "/Storage/Videos"
+        thumb_folder = "/Storage/Thumbnails"
 
-        # Inserção dos dados na base de dados
+        # Cria os diretórios se não existirem
+        os.makedirs(video_folder, exist_ok=True)
+        os.makedirs(thumb_folder, exist_ok=True)
+
+        # Define os caminhos de salvamento
+        video_path = os.path.join(video_folder, videofile.filename)
+        thumb_path = os.path.join(thumb_folder, thumbnailfile.filename)
+        
+        app.logger.info(f"Tentando salvar vídeo em: {video_path}")
+        app.logger.info(f"Tentando salvar thumbnail em: {thumb_path}")
+
+        # Salva os arquivos
+        videofile.save(video_path)
+        thumbnailfile.save(thumb_path)
+        
+        # Obtém a duração do vídeo
+        duration = get_video_duration(video_path)
+        
+        # Insere os dados na base de dados
         videos_collection.insert_one({
             "title": title,
-            "thumbnailfile": thumbnailfile.filename,
-            "videofile": videofile.filename,
+            "thumbnail": thumbnailfile.filename,  # Apenas o nome do arquivo
+            "video": videofile.filename,            # Se preferir, só o nome
             "description": description,
             "duration": duration
         })
 
-        app.logger.info("Upload concluído com sucesso")
+
         return jsonify({
             "status": "success",
             "message": "Upload realizado com sucesso!",
@@ -60,10 +74,10 @@ def upload_video():
         })
 
     except Exception as e:
-        app.logger.error(f"Erro durante o upload: {e}")
+        # Em vez de apenas registrar o erro, você também pode enviá-lo para o cliente
         return jsonify({
             "status": "error",
-            "message": "Erro ao processar o upload."
+            "message": f"Erro ao processar o upload: {str(e)}"
         }), 500
 
 
@@ -73,25 +87,19 @@ def health_check():
     return jsonify({'status': 'healthy'})
 
 
+from moviepy.editor import VideoFileClip
+
 def get_video_duration(video_path):
     try:
-        clip = VideoFileClip(video_path)
-        duration = clip.duration  # duration in seconds
-
-        minutes = int(duration // 60)
-        seconds = int(duration % 60)
-        
-        clip.reader.close()       # release the file handle
-
-        # If your movie has audio, you might also want to release the audio resources:
-        if clip.audio:
-            clip.audio.reader.close_proc()
-
-        return f"{str(minutes)}:{str(seconds)}"
-    
+        with VideoFileClip(video_path) as clip:
+            duration = clip.duration
+            minutes = int(duration // 60)
+            seconds = int(duration % 60)
+        return f"{minutes}:{seconds}"
     except Exception as e:
         print(f"Error retrieving video duration: {e}")
         return None
+
 
 
 if __name__ == '__main__':

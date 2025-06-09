@@ -22,3 +22,15 @@ spec:
         env:
         - name: FLASK_ENV
           value: "production"
+        volumeMounts:
+        - name: videos-storage
+          mountPath: /Storage/Videos  # Caminho onde serão armazenados os vídeos dentro do container
+        - name: thumbnails-storage
+          mountPath: /Storage/Thumbnails  # Caminho onde serão armazenadas as thumbnails dentro do container
+      volumes:
+      - name: videos-storage
+        persistentVolumeClaim:
+          claimName: videos-storage-claim
+      - name: thumbnails-storage
+        persistentVolumeClaim:
+          claimName: thumbnails-storage-claim

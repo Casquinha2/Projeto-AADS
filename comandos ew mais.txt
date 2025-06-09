@@ -12,8 +12,34 @@ kubectl create configmap frontend-html --from-file=./frontend
 
 (alguma mudanca no deployment)
 
+minikube stop
+minikube delete
+minikube start --nodes=3 --driver=docker
+
+kubectl create namespace monitorar
+
 kubectl create configmap frontend-html --from-file=./frontend
 
+cd frontend
+docker build --no-cache -t frontend:v1 .
+minikube image load frontend:v1
+
+cd ../catalogservice
+docker build --no-cache -t catalogservice:v1 .
+minikube image load catalogservice:v1
+
+cd ../streamingservice
+docker build --no-cache -t streamingservice:v1 .
+minikube image load streamingservice:v1
+
+cd ../uploadservice
+docker build --no-cache -t uploadservice:v1 .
+minikube image load uploadservice:v1
+
+cd ..
+
+kubectl apply -f videos-storage-claim.yaml
+kubectl apply -f thumbnails-storage-claim.yaml
 
 kubectl apply -f frontend-deployment.yaml
 kubectl apply -f frontend-service.yaml
@@ -27,31 +53,6 @@ kubectl apply -f streamingservice-service.yaml
 kubectl apply -f uploadservice-deployment.yaml
 kubectl apply -f uploadservice-service.yaml
 
-cd frontend
-
-docker build --no-cache -t frontend:v1 .
-minikube image load frontend:v1
-
-cd ../catalogservice
-
-docker build --no-cache -t catalogservice:v1 .
-minikube image load catalogservice:v1
-
-cd ../streamingservice
-
-docker build --no-cache -t streamingservice:v1 .
-minikube image load streamingservice:v1
-
-cd ../uploadservice
-
-docker build --no-cache -t uploadservice:v1 .
-minikube image load uploadservice:v1
-
-cd ..
-
-(diretorio principal)
-
-kubectl create namespace monitorar
 kubectl apply -f mongodb.yaml
 
 

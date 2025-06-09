@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>UalFlix</title>
+    <meta charset="UTF-8">
+
+    <title>UALFlix</title>
     <style>
         /* General form styling */
         .header {
@@ -72,6 +74,19 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
         }
+        .img {
+            width: 300px;
+            height: 200px;
+            object-fit: contain;
+        }
+        .btn-small {
+            padding: 5px 10px;      /* Ajusta o preenchimento interno para diminuir o tamanho */
+            font-size: 12px;        /* Diminui o tamanho da fonte */
+            border-radius: 4px;     /* Opcional: adiciona cantos arredondados */
+            margin: 2px;            /* Espaçamento entre os botões, se necessário */
+        }
+
+
     </style>
 </head>
 <body>
@@ -112,91 +127,93 @@
                     <button type="submit">Upload Video</button>
                 </div>
             </form>
+
+            <div id="messageupload"></div>
         </div>
 
         <!-- Elemento para mensagens de feedback (upload, erros, etc.) -->
-        <div id="message"></div>
+        <div id="messageload"></div>
     </div>
     
     <script>
-        async function loadVideos() {
-            try {
-                // Altere a URL de acordo com o seu backend se necessário.
-                const response = await fetch('http://127.0.0.1:5000/api/video');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                // Espera receber um array de objetos de vídeo.
-                const videos = await response.json();
-                
-                // Seleciona o container onde os vídeos serão exibidos.
-                const container = document.getElementById("videos");
-                container.innerHTML = ""; // Limpa qualquer conteúdo anterior
-                
-                // Loop sobre cada vídeo e cria seu elemento HTML.
-                videos.forEach(video => {
-                    // Cria um <figure> para cada vídeo, incluindo thumbnail, título e duração.
-                    const figure = document.createElement("figure");
-                    figure.innerHTML = `
-                        <img src="${video.thumbnailfile}" alt="${video.title}" class="img" onclick="openVideo('${video.title}')">
+        function loadVideos() {
+            const container = document.getElementById("videos");
+            const messageLoad = document.getElementById("messageload");
+            container.innerHTML = "";  
+            messageLoad.innerHTML = "<p>Carregando vídeos...</p>";
+            
+            fetch('http://127.0.0.1:5000/api/video')
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status !== "success") {
+                        throw new Error(result.message || "Erro ao carregar vídeos");
+                    }
+
+                    // Limpa a mensagem de loading
+                    messageLoad.innerHTML = "";
+                    
+                    // Itera sobre o array de vídeos que está em result.data
+                    result.data.forEach(video => {
+                        const figure = document.createElement("figure");
+                        figure.innerHTML = `
+                        <img src="http://127.0.0.1:5000/api/uploads/thumbnails/${video.thumbnail}" alt="${video.title}" class="img">
                         <figcaption>
                             <div class="video-title">${video.title}</div>
-                            <div class="video-duration">Duration: ${video.duration}</div>
+                            <div class="video-description">${video.description}</div>
+                            <div class="video-duration">Duração: ${video.duration || "N/D"}</div>
                             <div class="buttonslayout">
-                                <button onclick="editVideo('${video._id || video.title}')">Editar</button>
-                                <button onclick="deleteVideo('${video._id || video.title}')">Deletar</button>
+                            <button class="btn-small" onclick="editVideo('${video._id}')">Editar</button>
+                            <button class="btn-small" onclick="deleteVideo('${video._id}')">Deletar</button>
+
                             </div>
                         </figcaption>
-                    `;
-                    container.appendChild(figure);
+                        `;
+                        container.appendChild(figure);
+                    });
+                    messageLoad.innerHTML = `<p>Videos carregados</p>`;
+
+                })
+                .catch(error => {
+                console.error('Erro:', error);
+                messageLoad.innerHTML = `<p>Erro ao carregar resultados: ${error.message}</p>`;
                 });
-            } catch (error) {
-                console.error("Error loading videos:", error);
-            }
         }
+        
+
+
+
+
 
         function upload(event) {
             event.preventDefault(); // Previne o envio padrão do formulário
 
-            // Cria um objeto FormData a partir do formulário.
             const form = document.getElementById("uploadForm");
             const formData = new FormData(form);
 
-            // Envia os dados do formulário para o endpoint /api/upload.
             fetch("http://127.0.0.1:7000/api/upload", {
                 method: "POST",
                 body: formData,
             })
-            .then((response) => response.json())
-            .then((data) => {
-                const messageDiv = document.getElementById("message");
+            .then(response => response.json())
+            .then(data => {
+                const messageDiv = document.getElementById("messageupload");
                 if (data.status && data.status === "error") {
                     messageDiv.innerHTML = `<p style="color: red;">Erro: ${data.message}</p>`;
                 } else {
                     messageDiv.innerHTML = `<p style="color: green;">Upload realizado com sucesso!</p>`;
+                    form.reset();  // Limpa os valores do formulário
+                    loadVideos();  // Atualiza a lista de vídeos, se necessário
                 }
                 console.log("Resposta do servidor:", data);
             })
-            .catch((error) => {
+            .catch(error => {
                 console.error("Erro:", error);
-                const messageDiv = document.getElementById("message");
-                messageDiv.innerHTML = `<p style="color: red;">Ocorreu um erro no upload. Tente novamente.</p>`;
+                const messageDiv = document.getElementById("messageupload");
+                messageDiv.innerHTML = `<p style="color: red;">Ocorreu um erro no upload. ${error}.</p>`;
             });
         }
 
-        // Implementações simples para as funções de ação (você pode aprimorá-las conforme necessário).
-        function openVideo(videoIdentifier) {
-            console.log("Abrir vídeo:", videoIdentifier);
-            // Exemplo: abrir em uma nova página ou modal.
-        }
-        function editVideo(videoIdentifier) {
-            console.log("Editar vídeo:", videoIdentifier);
-            // Implementar lógica de edição.
-        }
-        function deleteVideo(videoIdentifier) {
-            console.log("Deletar vídeo:", videoIdentifier);
-            // Implementar lógica para deletar o vídeo.
-        }
+
 
         // Chama loadVideos quando o DOM estiver completamente carregado.
         document.addEventListener("DOMContentLoaded", loadVideos);
