@@ -169,8 +169,9 @@
                         </figcaption>
                         `;
                         container.appendChild(figure);
+                        messageLoad.innerHTML = `<p>Videos carregados ${video.thumbnail}</p>`;
                     });
-                    messageLoad.innerHTML = `<p>Videos carregados</p>`;
+                    
 
                 })
                 .catch(error => {

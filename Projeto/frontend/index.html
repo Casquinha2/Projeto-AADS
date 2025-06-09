@@ -1,79 +1,96 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
+  <meta charset="UTF-8">
+  <title>UALFlix</title>
+  <style>
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      padding-top: 5px;
+      margin-bottom: 50px;
+    }
+    
+    .header button {
+      padding: 10px 20px;
+      font-size: 16px;
+    }
 
-    <title>UALFlix</title>
-    <style>
-        .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center; /* vertically centers the elements */
-        padding: 20px;
-        padding-top: 5px;
-        margin-bottom: 50px;
-        }
-        
-        /* Optional styling for the button */
-        .header button {
-        padding: 10px 20px;
-        font-size: 16px;
-        }
-
-        body {
-            margin: 20px;
-        }
-        .option {
-            padding: 10px;
-            margin: 5px;
-            border: 1px solid #ddd;
-            cursor: pointer;
-        }
-        .option:hover {
-            background-color: #f5f5f5;
-        }
-        .img {
-            width: 200px;       /* Fixed width */
-            height: 200px;      /* Fixed height */
-            object-fit: cover;  /* Ensures the image covers the container, cropping if needed */
-            display: block;
-            margin: 0 auto;
-        }
-        #videos {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr); /* 3 equal columns */
-            gap: 100px 20px; /* 40px vertical gap (row) and 20px horizontal gap (column) */
-        }
-        /* Style the figure to center its contents */
-        #videos figure {
-            text-align: center;
-            margin: 0;
-        }
-        #videos figcaption {
-            margin-top: 15px; /* Space between the image and the title */
-        }
-    </style>
-
+    body {
+      margin: 20px;
+    }
+    .images {
+      width: 400px;
+      height: 200px;
+      object-fit: contain;
+    }
+    #videos {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 100px 20px;
+    }
+    #videos figure {
+      text-align: center;
+      margin: 0;
+    }
+    #videos figcaption {
+      margin-top: 15px;
+    }
+  </style>
 </head>
 <body>
+  <div class="header">
+    <h1>UalFlix</h1>
+    <button onclick="window.location.href='/admin.html';">Entrar em administrador</button>
+  </div>
 
-    <div class="header">
-        <h1>UalFlix</h1>
-        <button onclick="window.location.href='/admin.html';">Entrar em administrador</button>
-    </div>
+  <div id="videos"></div>
+  <div id="messageload"></div> <!-- Adicionado o container de mensagem -->
+  
+  <script>
+    function loadVideosCatalog() {
+      const container = document.getElementById("videos");
+      const messageLoad = document.getElementById("messageload");
+      
+      container.innerHTML = "";  
+      messageLoad.innerHTML = "<p>Carregando vídeos...</p>";
+      
+      fetch('http://127.0.0.1:5000/api/video')
+        .then(response => response.json())
+        .then(result => {
+          if (result.status !== "success") {
+            throw new Error(result.message || "Erro ao carregar vídeos");
+          }
 
-    <div id="videos"></div>
-    
-    
-    <script>
+          // Limpa a mensagem de loading
+          messageLoad.innerHTML = "";
+          
+          // Itera sobre o array de vídeos que está em result.data
+          result.data.forEach(video => {
+            const figure = document.createElement("figure");
+            figure.innerHTML = `
+              <img src="http://127.0.0.1:5000/api/uploads/thumbnails/${video.thumbnail}" alt="${video.title}" class="images">
+              <figcaption>
+                <div class="video-title">${video.title}</div>
+                <div class="video-description">${video.description}</div>
+                <div class="video-duration">Duração: ${video.duration || "N/D"}</div>
+              </figcaption>
+            `;
+            container.appendChild(figure);
+          });
+          
+          // Opcional: exibir uma mensagem final após o carregamento
+          messageLoad.innerHTML = `<p>${result.data.length} vídeos carregados.</p>`;
+        })
+        .catch(error => {
+          console.error('Erro:', error);
+          messageLoad.innerHTML = `<p>Erro ao carregar resultados: ${error.message}</p>`;
+        });
+    }
 
-        // This function dynamically creates a figure element for each item.
-        async function loadVideos() {
-            
-        }
-
-        // Call loadVideos when the page loads
-        window.onload = loadVideos;
-    </script>
+    window.onload = loadVideosCatalog;
+  </script>
 </body>
 </html>

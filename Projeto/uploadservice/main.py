@@ -87,8 +87,6 @@ def health_check():
     return jsonify({'status': 'healthy'})
 
 
-from moviepy.editor import VideoFileClip
-
 def get_video_duration(video_path):
     try:
         with VideoFileClip(video_path) as clip:
