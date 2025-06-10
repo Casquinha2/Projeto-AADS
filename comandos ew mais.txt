@@ -40,6 +40,7 @@ cd ..
 
 kubectl apply -f videos-storage-claim.yaml
 kubectl apply -f thumbnails-storage-claim.yaml
+kubectl apply -f streams-storage-claim.yaml
 
 kubectl apply -f frontend-deployment.yaml
 kubectl apply -f frontend-service.yaml

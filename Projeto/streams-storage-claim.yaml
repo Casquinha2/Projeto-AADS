@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: streams-storage-claim
+spec:
+  accessModes:
+    - ReadWriteMany  # Permite que múltiplos pods acessem este volume
+  resources:
+    requests:
+      storage: 10Gi  # Ajuste a quantidade de armazenamento conforme necessário
+  

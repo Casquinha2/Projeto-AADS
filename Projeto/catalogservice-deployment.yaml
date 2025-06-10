@@ -27,6 +27,8 @@ spec:
           mountPath: /Storage/Videos  # Caminho onde serão armazenados os vídeos dentro do container
         - name: thumbnails-storage
           mountPath: /Storage/Thumbnails  # Caminho onde serão armazenadas as thumbnails dentro do container
+        - name: streams-storage
+          mountPath: /Storage/Streams
       volumes:
       - name: videos-storage
         persistentVolumeClaim:
@@ -34,3 +36,6 @@ spec:
       - name: thumbnails-storage
         persistentVolumeClaim:
           claimName: thumbnails-storage-claim
+      - name: streams-storage
+        persistentVolumeClaim:
+          claimName: streams-storage-claim
