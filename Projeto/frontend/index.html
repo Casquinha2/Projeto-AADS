@@ -71,7 +71,7 @@
           result.data.forEach(video => {
             const figure = document.createElement("figure");
             figure.innerHTML = `
-              <img src="http://127.0.0.1:5000/api/uploads/thumbnails/${video.thumbnail}" alt="${video.title}" class="images">
+              <img src="http://127.0.0.1:5000/api/uploads/thumbnails/${video.thumbnail}" alt="${video.title}" class="images" onclick="videoSelected('${video._id}')">
               <figcaption>
                 <div class="video-title">${video.title}</div>
                 <div class="video-description">${video.description}</div>
@@ -89,6 +89,21 @@
           messageLoad.innerHTML = `<p>Erro ao carregar resultados: ${error.message}</p>`;
         });
     }
+
+    function videoSelected(videoId) {
+      fetch(`http://127.0.0.1:6000/api/stream/${videoId}`)
+          .then(response => response.json())
+          .then(result => {
+              console.info("Video selecionado foi:", videoId);
+          })
+          .catch(error => {
+              console.error('Erro:', error);
+          });
+
+      window.location.href = `/stream/${videoId}`
+    }
+
+
 
     window.onload = loadVideosCatalog;
   </script>

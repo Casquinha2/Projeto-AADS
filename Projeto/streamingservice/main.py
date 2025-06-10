@@ -1,8 +1,9 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import logging
-
 from pymongo import MongoClient
+from bson.objectid import ObjectId
+import os
 
 app = Flask(__name__)
 CORS(app)  # Permitir CORS para todas as rotas
@@ -19,34 +20,80 @@ except Exception as e:
     app.logger.error(f"Erro ao conectar à MongoDB: {e}")
 
 
-@app.route('/api/selected', methods=['GET'])
-def selected_Video():
+@app.route('/api/stream/<string:videoId>')
+def stream_video(videoId):
     try:
-        title = request.json.get('title')
-        
-        if not title:
-            return jsonify({"error": "Invalid input"}), 400
-        
-        for video in videos_collection:
-            if video('title') == title:
-                thumbnailurl = video('thumbnailurl')
-                videourl = video('videourl')
-                description = video('description')
-                duration = video('duration')
-        
-        response = {
-        "title": title,
-        "thumbnailurl": thumbnailurl,
-        "videourl": videourl,
-        "description": description,
-        "duration": duration
-        }
-
-        return jsonify(response)
-            
+        # Converte o videoId para ObjectId e busca o documento
+        video = videos_collection.find_one({"_id": ObjectId(videoId)})
+        if video:
+            # Exemplo: você pode definir as URLs para HLS e DASH conforme sua lógica
+            hls_url = f"/path/to/hls/{videoId}.m3u8"
+            dash_url = f"/path/to/dash/{videoId}.mpd"
+            return jsonify(hls_url, dash_url)
+        else:
+            return jsonify({"message": "Nenhum vídeo encontrado com esse id"}), 404
     except Exception as e:
-        app.logger.error(f"Erro na seleção do video")
-        return jsonify({'status': 'error', 'message': 'Erro interno do servidor'}), 500
+        return jsonify({"error": str(e)}), 500
+
+
+
+def convert_to_hls(input_path, output_dir):
+    """Convert video to HLS format using FFmpeg"""
+    os.makedirs(output_dir, exist_ok=True)
+
+    hls_playlist = os.path.join(output_dir, 'playlist.m3u8')
+
+    # HLS conversion command
+    hls_cmd = [
+        'ffmpeg', '-i', input_path,
+        '-profile:v', 'baseline',
+        '-level', '3.0',
+        '-start_number', '0',
+        '-hls_time', '10',
+        '-hls_list_size', '0',
+        '-f', 'hls',
+        hls_playlist
+    ]
+
+    try:
+        subprocess.run(hls_cmd, check=True)
+        logger.info(f"HLS conversion completed for {input_path}")
+        return True
+    except subprocess.CalledProcessError as e:
+        logger.error(f"HLS conversion failed: {e}")
+        return False
+    
+def convert_to_dash(input_path, output_dir):
+    """Convert video to DASH format using FFmpeg"""
+    os.makedirs(output_dir, exist_ok=True)
+
+    dash_playlist = os.path.join(output_dir, 'manifest.mpd')
+
+    # DASH conversion command
+    dash_cmd = [
+        'ffmpeg', '-i', input_path,
+        '-map', '0:v', '-map', '0:a',
+        '-c:v', 'libx264', '-x264-params', 'keyint=60:min-keyint=60:no-scenecut=1',
+        '-b:v:0', '1500k',
+        '-c:a', 'aac', '-b:a', '128k',
+        '-bf', '1', '-keyint_min', '60',
+        '-g', '60', '-sc_threshold', '0',
+        '-f', 'dash',
+        '-use_template', '1', '-use_timeline', '1',
+        '-init_seg_name', 'init-$RepresentationID$.m4s',
+        '-media_seg_name', 'chunk-$RepresentationID$-$Number%05d$.m4s',
+        '-adaptation_sets', 'id=0,streams=v id=1,streams=a',
+        dash_playlist
+    ]
+
+    try:
+        subprocess.run(dash_cmd, check=True)
+        logger.info(f"DASH conversion completed for {input_path}")
+        return True
+    except subprocess.CalledProcessError as e:
+        logger.error(f"DASH conversion failed: {e}")
+        return False
+
 
 @app.route('/health', methods=['GET'])
 def health_check():

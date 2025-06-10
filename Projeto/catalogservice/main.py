@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify, send_from_directory, make_response
 from flask_cors import CORS
 import logging
 from pymongo import MongoClient
+from bson.objectid import ObjectId
 
 app = Flask(__name__)
 CORS(app)  # Permitir CORS para todas as rotas
@@ -54,6 +55,25 @@ def get_thumbnail(filename):
 def get_video(filename):
     video_folder =  "/Storage/Videos"
     return send_from_directory(video_folder, filename)
+
+
+
+
+@app.route('/api/video/<string:videoId>')
+def video_by_id(videoId):
+    try:
+        # Converte o id de string para ObjectId
+        video = videos_collection.find_one({"_id": ObjectId(videoId)})
+        if video:
+            # Como o ObjectId não é serializável, convertemos ele para string
+            video['_id'] = str(video['_id'])
+            return jsonify(video)
+        else:
+            return jsonify({"message": "Nenhum vídeo encontrado com esse id"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 
 @app.route('/health', methods=['GET'])
 def health_check():
