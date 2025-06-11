@@ -46,17 +46,18 @@ def show_videos():
             "data": []
         }), 500
 
-@app.route('/api/uploads/thumbnails/<path:filename>')
+@app.route('/api/thumbnails/<path:filename>')
 def get_thumbnail(filename):
     thumb_folder = "/Storage/Thumbnails"
-    return send_from_directory(thumb_folder, filename)
+    response = send_from_directory(thumb_folder, filename)
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
 
-@app.route('/api/uploads/videos/<path:filename>')
+
+@app.route('/api/videos/<path:filename>')
 def get_video(filename):
     video_folder =  "/Storage/Videos"
     return send_from_directory(video_folder, filename)
-
-
 
 
 @app.route('/api/video/<string:videoId>')

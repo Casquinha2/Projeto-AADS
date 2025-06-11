@@ -27,14 +27,15 @@ def stream_video(videoId):
         # Converte o videoId para ObjectId e busca o documento
         video = videos_collection.find_one({"_id": ObjectId(videoId)})
         if video:
-            video_file = f"/Storage/Videos/{video['filename']}"
+            video_file = f"/Storage/Videos/{video['video']}"
             streams_folder = "/Storage/Streams"
 
             hls_url = f"/Storage/Streams/{videoId}.m3u8"
             dash_url = f"/Storage/Streams/{videoId}.mpd"
 
-            if convert_to_hls(video_file, streams_folder) and convert_to_dash(video_file, streams_folder):
+            if convert_to_hls(video_file, streams_folder, videoId) and convert_to_dash(video_file, streams_folder, videoId):
                 return jsonify({"hls_url": hls_url, "dash_url": dash_url})
+
             else:
                 return jsonify({"message": "Erro na conversão do vídeo"}), 500
             
@@ -45,13 +46,9 @@ def stream_video(videoId):
 
 
 
-def convert_to_hls(input_path, output_dir):
-    """Convert video to HLS format using FFmpeg"""
+def convert_to_hls(input_path, output_dir, videoId):
     os.makedirs(output_dir, exist_ok=True)
-
-    hls_playlist = os.path.join(output_dir, 'playlist.m3u8')
-
-    # HLS conversion command
+    hls_playlist = os.path.join(output_dir, f'{videoId}.m3u8')
     hls_cmd = [
         'ffmpeg', '-i', input_path,
         '-profile:v', 'baseline',
@@ -62,7 +59,6 @@ def convert_to_hls(input_path, output_dir):
         '-f', 'hls',
         hls_playlist
     ]
-
     try:
         subprocess.run(hls_cmd, check=True)
         app.logger.info(f"HLS conversion completed for {input_path}")
@@ -70,14 +66,10 @@ def convert_to_hls(input_path, output_dir):
     except subprocess.CalledProcessError as e:
         app.logger.error(f"HLS conversion failed: {e}")
         return False
-    
-def convert_to_dash(input_path, output_dir):
-    """Convert video to DASH format using FFmpeg"""
+
+def convert_to_dash(input_path, output_dir, videoId):
     os.makedirs(output_dir, exist_ok=True)
-
-    dash_playlist = os.path.join(output_dir, 'manifest.mpd')
-
-    # DASH conversion command
+    dash_playlist = os.path.join(output_dir, f'{videoId}.mpd')
     dash_cmd = [
         'ffmpeg', '-i', input_path,
         '-map', '0:v', '-map', '0:a',
@@ -93,7 +85,6 @@ def convert_to_dash(input_path, output_dir):
         '-adaptation_sets', 'id=0,streams=v id=1,streams=a',
         dash_playlist
     ]
-
     try:
         subprocess.run(dash_cmd, check=True)
         app.logger.info(f"DASH conversion completed for {input_path}")
@@ -108,4 +99,4 @@ def health_check():
     return jsonify({'status': 'healthy'})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=6000, debug=True)
+    app.run(host='0.0.0.0', port=8080, debug=True)

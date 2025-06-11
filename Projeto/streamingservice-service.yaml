@@ -7,10 +7,10 @@ metadata:
   name: streamingservice
 spec:
   ports:
-  - name: 6000-6000
-    port: 6000
+  - name: 8080-8080
+    port: 8080
     protocol: TCP
-    targetPort: 6000
+    targetPort: 8080
   selector:
     app: streamingservice
   type: NodePort

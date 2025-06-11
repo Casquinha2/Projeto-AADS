@@ -35,21 +35,14 @@
             <h1 class="text-2xl font-bold mb-4">Video Player</h1>
 
             <div class="video-container">
-                <video
-                    id="my-video"
-                    class="video-js vjs-big-play-centered"
-                    controls
-                    preload="auto"
-                    width="640"
-                    height="360"
-                    data-setup='{"html5": {"hls": {"withCredentials": true}}}'
-                >
-                    <source src="{{ hls_url }}" type="application/x-mpegURL">
-                    <source src="{{ dash_url }}" type="application/dash+xml">
+                <video id="my-video" class="video-js vjs-big-play-centered" controls preload="auto" width="640" height="360">
+                    <!-- You might leave these empty so that videojs doesn’t try to load them before JS runs -->
+                    <source src="" type="application/x-mpegURL">
+                    <source src="" type="application/dash+xml">
                     <p class="vjs-no-js">
-                        To view this video please enable JavaScript, and consider upgrading to a
-                        web browser that supports HTML5 video
+                    To view this video please enable JavaScript, and consider upgrading to a web browser that supports HTML5 video
                     </p>
+
                 </video>
             </div>
 
@@ -67,28 +60,26 @@
         </div>
     </div>
     <script>
-        document.addEventListener('DOMContentLoaded', async function() {
+        document.addEventListener('DOMContentLoaded', function() {
             const params = new URLSearchParams(window.location.search);
             const videoId = params.get('videoId');
 
-            // Example of fetching video stream URLs using the videoId
-            try {
-            const response = await fetch(`http://127.0.0.1:6000/api/stream/${videoId}`);
-            const videoData = await response.json();
+            fetch(`http://127.0.0.1:8080/api/stream/${videoId}`)
+            .then(response => response.json())
+            .then(result => {
+                const hlsUrl = result.hls_url;
+                const dashUrl = result.dash_url;
+            
+                const player = videojs('my-video');
+                player.src([
+                    { src: hlsUrl, type: 'application/x-mpegURL' },
+                    { src: dashUrl, type: 'application/dash+xml' }
+                ]);
+            })
 
-            // Assume videoData contains the HLS and DASH URLs
-            const hlsUrl = videoData.hls_url;
-            const dashUrl = videoData.dash_url;
-
-            // Update the video element sources dynamically
-            const player = videojs('my-video');
-            player.src([
-                { src: hlsUrl, type: 'application/x-mpegURL' },
-                { src: dashUrl, type: 'application/dash+xml' }
-            ]);
-            } catch (error) {
-            console.error('Error fetching video data:', error);
-            }
+            .catch(error => {
+                console.error('Erro: ', error);
+            })
         });
     </script>
 
