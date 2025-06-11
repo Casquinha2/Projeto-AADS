@@ -18,12 +18,14 @@ try:
 except Exception as e:
     app.logger.error(f"Erro ao conectar à MongoDB: {e}")
 
+'''
 # Essa função garante que todas as respostas HTML incluam UTF-8 no Content-Type
 @app.after_request
 def set_charset(response):
     if response.content_type.startswith("text/html"):
         response.headers['Content-Type'] = 'text/html; charset=utf-8'
     return response
+'''
 
 @app.route('/api/video', methods=['GET'])
 def show_videos():
@@ -46,34 +48,12 @@ def show_videos():
             "data": []
         }), 500
 
-@app.route('/api/thumbnails/<path:filename>')
+@app.route('/api/thumbnails/<path:filename>', methods=['GET'])
 def get_thumbnail(filename):
     thumb_folder = "/Storage/Thumbnails"
     response = send_from_directory(thumb_folder, filename)
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
-
-
-@app.route('/api/videos/<path:filename>')
-def get_video(filename):
-    video_folder =  "/Storage/Videos"
-    return send_from_directory(video_folder, filename)
-
-
-@app.route('/api/video/<string:videoId>')
-def video_by_id(videoId):
-    try:
-        # Converte o id de string para ObjectId
-        video = videos_collection.find_one({"_id": ObjectId(videoId)})
-        if video:
-            # Como o ObjectId não é serializável, convertemos ele para string
-            video['_id'] = str(video['_id'])
-            return jsonify(video)
-        else:
-            return jsonify({"message": "Nenhum vídeo encontrado com esse id"}), 404
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
 
 
 @app.route('/health', methods=['GET'])

@@ -71,7 +71,11 @@
           result.data.forEach(video => {
             const figure = document.createElement("figure");
             figure.innerHTML = `
-              <img src="http://127.0.0.1:5000/api/thumbnails/${video.thumbnail}" alt="${video.title}" class="images" onclick="videoSelected('${video._id}')">
+              <img src="http://127.0.0.1:5000/api/thumbnails/${video.thumbnail}"
+                alt="${video.title}"
+                class="images"
+                onclick="videoSelected('title', 'thumbnail', 'description', 'duration')">
+
               <figcaption>
                 <div class="video-title">${video.title}</div>
                 <div class="video-description">${video.description}</div>
@@ -90,19 +94,33 @@
         });
     }
 
-    function videoSelected(videoId) {
-      fetch(`http://127.0.0.1:8080/api/stream/${videoId}`)
+    function videoSelected(title, thumbnail, description, duration) {
+      // Build the query parameters using URLSearchParams for proper encoding
+      const params = new URLSearchParams({
+          title: title,
+          thumbnail: thumbnail,
+          description: description,
+          duration: duration
+      });
+
+      // Append the parameters to the URL (for a GET request)
+      fetch(`http://127.0.0.1:8080/api/stream/?${params.toString()}`)
           .then(response => response.json())
           .then(result => {
-              console.info("Video selecionado foi:", videoId);
-              window.location.href=`/stream.html?videoId=${videoId}`;
+              console.info("Video selecionado foi:", title);
+              // Optionally, store the response data in sessionStorage
+              sessionStorage.setItem("videoData", JSON.stringify(result));
+              window.location.href = `/stream.html`;
           })
           .catch(error => {
               console.error('Erro:', error);
           });
-
-      
     }
+
+
+
+
+
 
 
 

@@ -1,10 +1,9 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import logging
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 import os
-import subprocess
 
 app = Flask(__name__)
 CORS(app)  # Permitir CORS para todas as rotas
@@ -18,81 +17,48 @@ try:
     videos_collection = db.videos
     app.logger.info("Conectado à MongoDB com sucesso")
 except Exception as e:
-    app.logger.error(f"Erro ao conectar à MongoDB: {e}")
+    app.logger.error(f"Erro ao conectar à MongoDB: {e}")    
 
-
-@app.route('/api/stream/<string:videoId>')
-def stream_video(videoId):
+@app.route('/api/stream/', methods=['GET'])
+def stream_video():
     try:
-        # Converte o videoId para ObjectId e busca o documento
-        video = videos_collection.find_one({"_id": ObjectId(videoId)})
-        if video:
-            video_file = f"/Storage/Videos/{video['video']}"
-            streams_folder = "/Storage/Streams"
+        title = request.args.get('title')
+        thumbnail = request.args.get('thumbnail')
+        description = request.args.get('description')
+        duration = request.args.get('duration')
 
-            hls_url = f"/Storage/Streams/{videoId}.m3u8"
-            dash_url = f"/Storage/Streams/{videoId}.mpd"
+        videos = list(videos_collection.find({}))
 
-            if convert_to_hls(video_file, streams_folder, videoId) and convert_to_dash(video_file, streams_folder, videoId):
-                return jsonify({"hls_url": hls_url, "dash_url": dash_url})
+        # Initialize video as None before the loop
+        video = None  
 
-            else:
-                return jsonify({"message": "Erro na conversão do vídeo"}), 500
-            
+        for v in videos:  # Rename to avoid confusion
+            if title == v['title'] and thumbnail == v['thumbnail'] and description == v['description'] and duration == v['duration']:
+                video = v
+                break
+
+        if video:  # Check if video was found
+            mp4_filename = video['video']
+            mp4_url = f"/api/videos/{mp4_filename}"
+            return jsonify({
+                "mp4_url": mp4_url,
+                "title": video['title'],
+                "description": video['description'],
+                "duration": video['duration']
+            })
         else:
-            return jsonify({"message": "Nenhum vídeo encontrado com esse id"}), 404
+            return jsonify({"error": "video nao encontrado"}), 404
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
 
 
 
-def convert_to_hls(input_path, output_dir, videoId):
-    os.makedirs(output_dir, exist_ok=True)
-    hls_playlist = os.path.join(output_dir, f'{videoId}.m3u8')
-    hls_cmd = [
-        'ffmpeg', '-i', input_path,
-        '-profile:v', 'baseline',
-        '-level', '3.0',
-        '-start_number', '0',
-        '-hls_time', '10',
-        '-hls_list_size', '0',
-        '-f', 'hls',
-        hls_playlist
-    ]
-    try:
-        subprocess.run(hls_cmd, check=True)
-        app.logger.info(f"HLS conversion completed for {input_path}")
-        return True
-    except subprocess.CalledProcessError as e:
-        app.logger.error(f"HLS conversion failed: {e}")
-        return False
 
-def convert_to_dash(input_path, output_dir, videoId):
-    os.makedirs(output_dir, exist_ok=True)
-    dash_playlist = os.path.join(output_dir, f'{videoId}.mpd')
-    dash_cmd = [
-        'ffmpeg', '-i', input_path,
-        '-map', '0:v', '-map', '0:a',
-        '-c:v', 'libx264', '-x264-params', 'keyint=60:min-keyint=60:no-scenecut=1',
-        '-b:v:0', '1500k',
-        '-c:a', 'aac', '-b:a', '128k',
-        '-bf', '1', '-keyint_min', '60',
-        '-g', '60', '-sc_threshold', '0',
-        '-f', 'dash',
-        '-use_template', '1', '-use_timeline', '1',
-        '-init_seg_name', 'init-$RepresentationID$.m4s',
-        '-media_seg_name', 'chunk-$RepresentationID$-$Number%05d$.m4s',
-        '-adaptation_sets', 'id=0,streams=v id=1,streams=a',
-        dash_playlist
-    ]
-    try:
-        subprocess.run(dash_cmd, check=True)
-        app.logger.info(f"DASH conversion completed for {input_path}")
-        return True
-    except subprocess.CalledProcessError as e:
-        app.logger.error(f"DASH conversion failed: {e}")
-        return False
-
+def get_video(filename):
+    video_folder = "/Storage/Videos"
+    return send_from_directory(video_folder, filename)
 
 @app.route('/health', methods=['GET'])
 def health_check():

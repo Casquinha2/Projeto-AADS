@@ -1,87 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Player</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.20.3/video-js.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.20.3/video.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-contrib-hls/5.15.0/videojs-contrib-hls.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dashjs/4.0.1/dash.all.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-contrib-dash/4.2.1/videojs-dash.min.js"></script>
-
-    <style>
-        .video-container {
-            position: relative;
-            padding-top: 56.25%; /* 16:9 Aspect Ratio */
-        }
-        .video-container .video-js {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Video Player</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+  <style>
+    .video-container {
+      position: relative;
+      padding-top: 56.25%; /* 16:9 Aspect Ratio */
+    }
+    .video-container video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
-    <div class="container mx-auto px-4 py-8">
-        <div class="mb-4">
-            <a href="/" class="text-blue-500 hover:underline">&larr; Back to all videos</a>
-        </div>
-
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h1 class="text-2xl font-bold mb-4">Video Player</h1>
-
-            <div class="video-container">
-                <video id="my-video" class="video-js vjs-big-play-centered" controls preload="auto" width="640" height="360">
-                    <!-- You might leave these empty so that videojs doesn’t try to load them before JS runs -->
-                    <source src="" type="application/x-mpegURL">
-                    <source src="" type="application/dash+xml">
-                    <p class="vjs-no-js">
-                    To view this video please enable JavaScript, and consider upgrading to a web browser that supports HTML5 video
-                    </p>
-
-                </video>
-            </div>
-
-            <div class="mt-4">
-                <h3 class="font-medium mb-2">Stream URLs:</h3>
-                <ul class="space-y-1">
-                    <li>
-                        <a href="{{ hls_url }}" class="text-blue-500 hover:underline" target="_blank">HLS Stream</a>
-                    </li>
-                    <li>
-                        <a href="{{ dash_url }}" class="text-blue-500 hover:underline" target="_blank">DASH Stream</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
+  <div class="container mx-auto px-4 py-8">
+    <div class="mb-4">
+      <a href="/" class="text-blue-500 hover:underline">&larr; Back to all videos</a>
     </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const params = new URLSearchParams(window.location.search);
-            const videoId = params.get('videoId');
 
-            fetch(`http://127.0.0.1:8080/api/stream/${videoId}`)
-            .then(response => response.json())
-            .then(result => {
-                const hlsUrl = result.hls_url;
-                const dashUrl = result.dash_url;
-            
-                const player = videojs('my-video');
-                player.src([
-                    { src: hlsUrl, type: 'application/x-mpegURL' },
-                    { src: dashUrl, type: 'application/dash+xml' }
-                ]);
-            })
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <h1 class="text-2xl font-bold mb-4">Video Player</h1>
 
-            .catch(error => {
-                console.error('Erro: ', error);
-            })
-        });
-    </script>
+      <div class="video-container">
+        <!-- The video element that will play the MP4 file -->
+        <video id="my-video" controls preload="auto">
+          Your browser does not support the video tag.
+        </video>
+      </div>
 
+      <div class="mt-4" id="video-details">
+        <!-- Optional: Display video title/description here -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const videoDataString = sessionStorage.getItem("videoData");
+
+        if (videoDataString) {
+            const videoData = JSON.parse(videoDataString);
+            console.log("Video data from sessionStorage:", videoData);
+
+            // Set the MP4 file as the source for the video player
+            const videoElement = document.getElementById('my-video');
+            videoElement.src = `http://127.0.0.1:8080${videoData.mp4_url}`;
+
+            // Display additional details (title, description, duration)
+            const detailsDiv = document.getElementById('video-details');
+            detailsDiv.innerHTML = `
+                <h2 class="text-xl font-bold">${videoData.title}</h2>
+                <p>${videoData.description}</p>
+                <p><strong>Duration:</strong> ${videoData.duration || "N/A"}</p>
+            `;
+        } else {
+            console.error("No video data found in sessionStorage.");
+        }
+    });
+
+
+  </script>
 </body>
 </html>

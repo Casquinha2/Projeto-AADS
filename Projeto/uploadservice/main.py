@@ -60,8 +60,8 @@ def upload_video():
         # Insere os dados na base de dados
         videos_collection.insert_one({
             "title": title,
-            "thumbnail": thumbnailfile.filename,  # Apenas o nome do arquivo
-            "video": videofile.filename,            # Se preferir, só o nome
+            "thumbnail": thumbnailfile.filename,
+            "video": videofile.filename,
             "description": description,
             "duration": duration
         })
