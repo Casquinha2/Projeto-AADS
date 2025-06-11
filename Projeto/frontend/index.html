@@ -95,12 +95,13 @@
           .then(response => response.json())
           .then(result => {
               console.info("Video selecionado foi:", videoId);
+              window.location.href=`/stream.html?videoId=${videoId}`;
           })
           .catch(error => {
               console.error('Erro:', error);
           });
 
-      window.location.href='/stream.html';
+      
     }
 
 

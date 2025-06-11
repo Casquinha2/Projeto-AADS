@@ -67,25 +67,30 @@
         </div>
     </div>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var player = videojs('my-video', {
-                techOrder: ["html5"],
-                sources: [
-                    {
-                        src: "{{ hls_url }}",
-                        type: "application/x-mpegURL"
-                    },
-                    {
-                        src: "{{ dash_url }}",
-                        type: "application/dash+xml"
-                    }
-                ]
-            });
+        document.addEventListener('DOMContentLoaded', async function() {
+            const params = new URLSearchParams(window.location.search);
+            const videoId = params.get('videoId');
 
-            player.on('error', function() {
-                console.log('Video player error:', player.error());
-            });
+            // Example of fetching video stream URLs using the videoId
+            try {
+            const response = await fetch(`http://127.0.0.1:6000/api/stream/${videoId}`);
+            const videoData = await response.json();
+
+            // Assume videoData contains the HLS and DASH URLs
+            const hlsUrl = videoData.hls_url;
+            const dashUrl = videoData.dash_url;
+
+            // Update the video element sources dynamically
+            const player = videojs('my-video');
+            player.src([
+                { src: hlsUrl, type: 'application/x-mpegURL' },
+                { src: dashUrl, type: 'application/dash+xml' }
+            ]);
+            } catch (error) {
+            console.error('Error fetching video data:', error);
+            }
         });
     </script>
+
 </body>
 </html>
