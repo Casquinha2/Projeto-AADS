@@ -60,8 +60,8 @@ kubectl apply -f mongodb.yaml
 RUN!!
 
 kubectl port-forward service/catalogservice 5000:5000
-kubectl port-forward service/streamingservice 6000:6000
 kubectl port-forward service/uploadservice 7000:7000
+kubectl port-forward service/streamingservice 8080:8080
 
 minikube service frontend
 

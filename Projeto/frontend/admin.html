@@ -2,19 +2,16 @@
 <html>
 <head>
     <meta charset="UTF-8">
-
     <title>UALFlix</title>
     <style>
-        /* General form styling */
+        /* General header and button styling */
         .header {
             display: flex;
             justify-content: space-between;
-            align-items: center; /* verticalmente centra os elementos */
-            padding: 20px;
-            padding-top: 5px;
+            align-items: center;
+            padding: 20px 20px 5px 20px;
             margin-bottom: 50px;
         }
-        /* Optional styling for the button */
         .header button {
             padding: 10px 20px;
             font-size: 16px;
@@ -52,14 +49,14 @@
         /* Layout container divided into two columns */
         #layout {
             display: grid;
-            grid-template-columns: 2fr 1fr; /* duas colunas, uma o dobro da largura da outra */
+            grid-template-columns: 2fr 1fr;
             gap: 20px;
             padding: 20px;
         }
         /* Videos container styling */
         #videos {
             display: grid;
-            grid-template-columns: repeat(2, 1fr); /* duas colunas para os thumbnails */
+            grid-template-columns: repeat(2, 1fr);
             gap: 20px;
         }
         /* Styling the figure element to center its contents */
@@ -73,6 +70,7 @@
         #videos .buttonslayout {
             display: grid;
             grid-template-columns: 1fr 1fr;
+            gap: 5px;
         }
         .img {
             width: 300px;
@@ -80,13 +78,11 @@
             object-fit: contain;
         }
         .btn-small {
-            padding: 5px 10px;      /* Ajusta o preenchimento interno para diminuir o tamanho */
-            font-size: 12px;        /* Diminui o tamanho da fonte */
-            border-radius: 4px;     /* Opcional: adiciona cantos arredondados */
-            margin: 2px;            /* Espaçamento entre os botões, se necessário */
+            padding: 5px 10px;
+            font-size: 12px;
+            border-radius: 4px;
+            margin: 2px;
         }
-
-
     </style>
 </head>
 <body>
@@ -127,66 +123,75 @@
                     <button type="submit">Upload Video</button>
                 </div>
             </form>
-
             <div id="messageupload"></div>
         </div>
 
-        <!-- Elemento para mensagens de feedback (upload, erros, etc.) -->
+        <!-- Feedback for loading videos -->
         <div id="messageload"></div>
     </div>
     
     <script>
+        // Function to load videos from the API endpoint
         function loadVideos() {
             const container = document.getElementById("videos");
             const messageLoad = document.getElementById("messageload");
+            console.log("Container element:", container);
+            console.log("Message Load element:", messageLoad);
+            
             container.innerHTML = "";  
             messageLoad.innerHTML = "<p>Carregando vídeos...</p>";
             
             fetch('http://127.0.0.1:5000/api/video')
-                .then(response => response.json())
+                .then(response => {
+                    console.log("Response status:", response.status);
+                    return response.json();
+                })
                 .then(result => {
+                    console.log("API response:", result);
                     if (result.status !== "success") {
                         throw new Error(result.message || "Erro ao carregar vídeos");
                     }
 
-                    // Limpa a mensagem de loading
+                    // Clear the loading message
                     messageLoad.innerHTML = "";
                     
-                    // Itera sobre o array de vídeos que está em result.data
+                    // Iterate over the videos from result.data
                     result.data.forEach(video => {
+                        console.info("Vídeo encontrado:", video);
                         const figure = document.createElement("figure");
+                        
+                        // Armazena o ID como um atributo de dados no elemento <figure>
+                        figure.setAttribute('data-id', video.id); 
+
                         figure.innerHTML = `
-                        <img src="http://127.0.0.1:5000/api/uploads/thumbnails/${video.thumbnail}" alt="${video.title}" class="img">
-                        <figcaption>
-                            <div class="video-title">${video.title}</div>
-                            <div class="video-description">${video.description}</div>
-                            <div class="video-duration">Duração: ${video.duration || "N/D"}</div>
-                            <div class="buttonslayout">
-                            <button class="btn-small" onclick="editVideo('${video._id}')">Editar</button>
-                            <button class="btn-small" onclick="deleteVideo('${video._id}')">Deletar</button>
-
-                            </div>
-                        </figcaption>
+                            <img src="http://127.0.0.1:5000/api/thumbnails/${video.thumbnail}" alt="${video.title}" class="img">
+                            <figcaption>
+                                <div class="video-title">${video.title}</div>
+                                <div class="video-description">${video.description}</div>
+                                <div class="video-duration">Duração: ${video.duration || "N/D"}</div>
+                                <div class="buttonslayout">
+                                    <button class="btn-small" onclick="editVideo('${video.id}')">Editar</button>
+                                    <button class="btn-small" onclick="deleteVideo('${video.id}')">Deletar</button>
+                                </div>
+                            </figcaption>
                         `;
+                        
                         container.appendChild(figure);
-                        messageLoad.innerHTML = `<p>Videos carregados ${video.thumbnail}</p>`;
                     });
-                    
 
+                    
+                    // Update the feedback message
+                    messageLoad.innerHTML = `<p>Vídeos carregados: ${result.data.length}</p>`;
                 })
                 .catch(error => {
-                console.error('Erro:', error);
-                messageLoad.innerHTML = `<p>Erro ao carregar resultados: ${error.message}</p>`;
+                    console.error('Erro:', error);
+                    messageLoad.innerHTML = `<p>Erro ao carregar resultados: ${error.message}</p>`;
                 });
         }
-        
 
-
-
-
-
+        // Function to handle video upload
         function upload(event) {
-            event.preventDefault(); // Previne o envio padrão do formulário
+            event.preventDefault(); // Prevent default form submission
 
             const form = document.getElementById("uploadForm");
             const formData = new FormData(form);
@@ -195,28 +200,30 @@
                 method: "POST",
                 body: formData,
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log("Upload response status:", response.status);
+                return response.json();
+            })
             .then(data => {
+                console.info("Video carregado:", data);
                 const messageDiv = document.getElementById("messageupload");
                 if (data.status && data.status === "error") {
                     messageDiv.innerHTML = `<p style="color: red;">Erro: ${data.message}</p>`;
                 } else {
                     messageDiv.innerHTML = `<p style="color: green;">Upload realizado com sucesso!</p>`;
-                    form.reset();  // Limpa os valores do formulário
-                    loadVideos();  // Atualiza a lista de vídeos, se necessário
+                    form.reset();  // Clear the upload form
+                    loadVideos();  // Refresh video list
                 }
                 console.log("Resposta do servidor:", data);
             })
             .catch(error => {
                 console.error("Erro:", error);
                 const messageDiv = document.getElementById("messageupload");
-                messageDiv.innerHTML = `<p style="color: red;">Ocorreu um erro no upload. ${error}.</p>`;
+                messageDiv.innerHTML = `<p style="color: red;">Ocorreu um erro no upload: ${error.message}</p>`;
             });
         }
 
-
-
-        // Chama loadVideos quando o DOM estiver completamente carregado.
+        // Call loadVideos when the DOM is fully loaded.
         document.addEventListener("DOMContentLoaded", loadVideos);
     </script>
 </body>

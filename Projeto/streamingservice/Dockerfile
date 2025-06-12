@@ -6,6 +6,6 @@ COPY main.py .
 
 RUN pip install flask flask-cors pymongo
 
-EXPOSE 6000
+EXPOSE 8080
 
 CMD ["python","main.py"]

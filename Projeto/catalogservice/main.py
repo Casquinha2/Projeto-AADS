@@ -18,21 +18,26 @@ try:
 except Exception as e:
     app.logger.error(f"Erro ao conectar à MongoDB: {e}")
 
+'''
 # Essa função garante que todas as respostas HTML incluam UTF-8 no Content-Type
 @app.after_request
 def set_charset(response):
     if response.content_type.startswith("text/html"):
         response.headers['Content-Type'] = 'text/html; charset=utf-8'
     return response
+'''
 
 @app.route('/api/video', methods=['GET'])
 def show_videos():
     try:
+        # Busca todos os documentos sem projeção, ou seja, todos os campos
         videos = list(videos_collection.find({}))
+        
+        # Converte o campo _id para string em cada documento
         for video in videos:
             video['_id'] = str(video['_id'])
+            
         app.logger.info(f"Resultados enviados: {videos}")
-        # Retorna uma resposta estruturada com status, mensagem e dados
         return jsonify({
             "status": "success",
             "message": "Vídeos carregados com sucesso.",
@@ -46,15 +51,14 @@ def show_videos():
             "data": []
         }), 500
 
-@app.route('/api/uploads/thumbnails/<path:filename>')
+
+@app.route('/api/thumbnails/<path:filename>', methods=['GET'])
 def get_thumbnail(filename):
     thumb_folder = "/Storage/Thumbnails"
-    return send_from_directory(thumb_folder, filename)
+    response = send_from_directory(thumb_folder, filename)
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
 
-@app.route('/api/uploads/videos/<path:filename>')
-def get_video(filename):
-    video_folder =  "/Storage/Videos"
-    return send_from_directory(video_folder, filename)
 
 
 
