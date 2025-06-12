@@ -159,6 +159,10 @@
                     result.data.forEach(video => {
                         console.info("Vídeo encontrado:", video);
                         const figure = document.createElement("figure");
+                        
+                        // Armazena o ID como um atributo de dados no elemento <figure>
+                        figure.setAttribute('data-id', video.id); 
+
                         figure.innerHTML = `
                             <img src="http://127.0.0.1:5000/api/thumbnails/${video.thumbnail}" alt="${video.title}" class="img">
                             <figcaption>
@@ -166,13 +170,15 @@
                                 <div class="video-description">${video.description}</div>
                                 <div class="video-duration">Duração: ${video.duration || "N/D"}</div>
                                 <div class="buttonslayout">
-                                    <button class="btn-small" onclick="editVideo('${video._id}')">Editar</button>
-                                    <button class="btn-small" onclick="deleteVideo('${video._id}')">Deletar</button>
+                                    <button class="btn-small" onclick="editVideo('${video.id}')">Editar</button>
+                                    <button class="btn-small" onclick="deleteVideo('${video.id}')">Deletar</button>
                                 </div>
                             </figcaption>
                         `;
+                        
                         container.appendChild(figure);
                     });
+
                     
                     // Update the feedback message
                     messageLoad.innerHTML = `<p>Vídeos carregados: ${result.data.length}</p>`;

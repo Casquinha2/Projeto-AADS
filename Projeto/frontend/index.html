@@ -70,11 +70,19 @@
           // Itera sobre o array de vídeos que está em result.data
           result.data.forEach(video => {
             const figure = document.createElement("figure");
+            // Armazena o id do vídeo num atributo de dado
+            figure.setAttribute("data-id", video.id);
+            
+            // Podemos também armazenar outros dados caso necessário, como:
+            // figure.setAttribute("data-title", video.title);
+            // figure.setAttribute("data-thumbnail", video.thumbnail);
+            // etc.
+
             figure.innerHTML = `
               <img src="http://127.0.0.1:5000/api/thumbnails/${video.thumbnail}"
                 alt="${video.title}"
                 class="images"
-                onclick="videoSelected('title', 'thumbnail', 'description', 'duration')">
+                onclick="videoSelected(this)">
 
               <figcaption>
                 <div class="video-title">${video.title}</div>
@@ -85,7 +93,7 @@
             container.appendChild(figure);
           });
           
-          // Opcional: exibir uma mensagem final após o carregamento
+          // Exibe uma mensagem final após o carregamento
           messageLoad.innerHTML = `<p>${result.data.length} vídeos carregados.</p>`;
         })
         .catch(error => {

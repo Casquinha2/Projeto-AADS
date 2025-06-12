@@ -30,11 +30,14 @@ def set_charset(response):
 @app.route('/api/video', methods=['GET'])
 def show_videos():
     try:
+        # Busca todos os documentos sem projeção, ou seja, todos os campos
         videos = list(videos_collection.find({}))
+        
+        # Converte o campo _id para string em cada documento
         for video in videos:
             video['_id'] = str(video['_id'])
+            
         app.logger.info(f"Resultados enviados: {videos}")
-        # Retorna uma resposta estruturada com status, mensagem e dados
         return jsonify({
             "status": "success",
             "message": "Vídeos carregados com sucesso.",
@@ -47,6 +50,7 @@ def show_videos():
             "message": f"Erro ao obter resultados: {str(e)}",
             "data": []
         }), 500
+
 
 @app.route('/api/thumbnails/<path:filename>', methods=['GET'])
 def get_thumbnail(filename):
