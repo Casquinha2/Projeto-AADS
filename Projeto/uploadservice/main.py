@@ -4,6 +4,7 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import logging
 from pymongo import MongoClient
+from bson.objectid import ObjectId
 
 from moviepy.editor import VideoFileClip
 
@@ -82,7 +83,7 @@ def upload_video():
 
 
 
-@app.route('/health', methods=['GET'])
+@app.route('/health', methods = ['GET'])
 def health_check():
     return jsonify({'status': 'healthy'})
 
@@ -97,8 +98,76 @@ def get_video_duration(video_path):
     except Exception as e:
         print(f"Error retrieving video duration: {e}")
         return None
+    
 
+@app.route('/api/edit', methonds =['POST'])
+def edit_video():
+    try:
+        videoId = request.form.get('videoId')
 
+        title = request.form.get('title')
+        description = request.form.get('description')
+        thumbnailfile = request.files.get('thumbnail')
+        videofile = request.files.get('video')
+        
+        video = None
+
+        try:
+            video = videos_collection.find_one(ObjectId(videoId))
+            if video == None:
+                raise Exception
+        except:
+            return jsonify({'message': 'Video com id: {videoId} não encontrado'})
+
+        if not title and not thumbnailfile and not videofile and not description:
+            return jsonify({
+                "status": "error",
+                "message": f"Dados não fornecidos. Title: {title}, Description: {description}"
+            }), 400
+
+        if thumbnailfile:
+            thumb_folder = "/Storage/Thumbnails"
+            os.makedirs(thumb_folder, exist_ok=True)
+            thumb_path = os.path.join(thumb_folder, thumbnailfile.filename)
+            app.logger.info(f"Tentando salvar thumbnail em: {thumb_path}")
+            thumbnailfile.save(thumb_path)
+        
+        if videofile:
+            video_folder =  "/Storage/Videos"
+            os.makedirs(video_folder, exist_ok=True)
+            video_path = os.path.join(video_folder, videofile.filename)
+            app.logger.info(f"Tentando salvar vídeo em: {video_path}")
+            videofile.save(video_path)
+            duration = get_video_duration(video_path)
+        
+
+        if title == "":
+            title = video['title']
+            
+        if description == "":
+            description = video['description']
+
+        videos_collection.find_one_and_update({"_id": ObjectId(videoId)},
+            {"$set": {"title": title,
+                        "thumbnail": thumbnailfile.filename,
+                        "video": videofile.filename,
+                        "description": description,
+                        "duration": duration}})
+        
+        return jsonify({'message': 'A edição foi bem sucedida'})
+    except Exception as e:
+        return jsonify({'Error': 'Erro {e}'})
+    
+@app.route('/api/delete', methonds =['GET']) 
+def delete_video():
+    try:
+        videoId = request.get_json()
+
+        videos_collection.find_one_and_delete({'_id': ObjectId(videoId)})
+
+        return jsonify({'message': 'Video apagado com sucesso'})
+    except Exception as e:
+        return jsonify({'Error': 'Erro {e}'})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=7000, debug=True)

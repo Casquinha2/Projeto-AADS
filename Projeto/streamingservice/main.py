@@ -39,7 +39,7 @@ def stream_video():
 
         if video:  # Check if video was found
             mp4_filename = video['video']
-            mp4_url = f"/api/videos/{mp4_filename}"
+            mp4_url = get_video(mp4_filename)
             return jsonify({
                 "mp4_url": mp4_url,
                 "title": video['title'],
