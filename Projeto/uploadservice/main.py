@@ -37,7 +37,7 @@ def upload_video():
             }), 400
 
         # Define caminhos absolutos baseados no diretório atual
-        video_folder =  "/Storage/Videos"
+        video_folder = "/Storage/Videos"
         thumb_folder = "/Storage/Thumbnails"
 
         # Cria os diretórios se não existirem
@@ -55,8 +55,20 @@ def upload_video():
         videofile.save(video_path)
         thumbnailfile.save(thumb_path)
         
+        # Verificando se o arquivo de vídeo foi salvo corretamente
+        if not os.path.exists(video_path):
+            raise Exception("O arquivo de vídeo não foi salvo.")
+        
+        # Opcional: Verifica se o arquivo possui um tamanho válido
+        if os.path.getsize(video_path) <= 0:
+            raise Exception("O arquivo de vídeo foi salvo vazio.")
+        
         # Obtém a duração do vídeo
         duration = get_video_duration(video_path)
+
+        if duration is None:
+            app.logger.warning("Não foi possível determinar a duração do vídeo.")
+            duration = "N/D"
         
         # Insere os dados na base de dados
         videos_collection.insert_one({
@@ -67,7 +79,8 @@ def upload_video():
             "duration": duration
         })
 
-
+        app.logger.info("Upload realizado com sucesso!")
+        # Resposta para o frontend informando sucesso e a duração do vídeo
         return jsonify({
             "status": "success",
             "message": "Upload realizado com sucesso!",
@@ -75,11 +88,13 @@ def upload_video():
         })
 
     except Exception as e:
-        # Em vez de apenas registrar o erro, você também pode enviá-lo para o cliente
+        # Em vez de apenas registrar o erro, você o envia para o cliente
+        app.logger.error(f"Erro ao processar o upload: {str(e)}")
         return jsonify({
             "status": "error",
             "message": f"Erro ao processar o upload: {str(e)}"
         }), 500
+
 
 
 
@@ -100,7 +115,7 @@ def get_video_duration(video_path):
         return None
     
 
-@app.route('/api/edit', methonds =['POST'])
+@app.route('/api/edit', methods =['POST'])
 def edit_video():
     try:
         videoId = request.form.get('videoId')
@@ -158,7 +173,7 @@ def edit_video():
     except Exception as e:
         return jsonify({'Error': 'Erro {e}'})
     
-@app.route('/api/delete', methonds =['GET']) 
+@app.route('/api/delete', methods =['GET']) 
 def delete_video():
     try:
         videoId = request.get_json()
@@ -168,6 +183,57 @@ def delete_video():
         return jsonify({'message': 'Video apagado com sucesso'})
     except Exception as e:
         return jsonify({'Error': 'Erro {e}'})
+    
+
+
+
+'''@app.route('/api/stream/', methods=['GET'])
+def stream_video():
+    try:
+        title = request.args.get('title')
+        thumbnail = request.args.get('thumbnail')
+        description = request.args.get('description')
+        duration = request.args.get('duration')
+
+        videos = list(videos_collection.find({}))
+
+        # Initialize video as None before the loop
+        video = None  
+
+        for v in videos:  # Rename to avoid confusion
+            if title == v['title'] and thumbnail == v['thumbnail'] and description == v['description'] and duration == v['duration']:
+                video = v
+                break
+
+        if video:  # Check if video was found
+            mp4_filename = video['video']
+            mp4_url = get_video(mp4_filename)
+            return jsonify({
+                "mp4_url": mp4_url,
+                "title": video['title'],
+                "description": video['description'],
+                "duration": video['duration']
+            })
+        else:
+            return jsonify({"error": "video nao encontrado"}), 404
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+
+def get_video(filename):
+    video_folder = "/Storage/Videos"
+    return send_from_directory(video_folder, filename)'''
+
+@app.route('/api/videos/<path:filename>', methods=['GET'])
+def get_video(filename):
+    video_folder = "/Storage/Videos"
+    response = send_from_directory(video_folder, filename)
+    return response
+
+
+
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=7000, debug=True)

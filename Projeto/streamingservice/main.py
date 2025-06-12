@@ -56,9 +56,6 @@ def stream_video():
 
 
 
-def get_video(filename):
-    video_folder = "/Storage/Videos"
-    return send_from_directory(video_folder, filename)
 
 @app.route('/health', methods=['GET'])
 def health_check():

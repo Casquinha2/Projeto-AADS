@@ -47,7 +47,7 @@
   </div>
 
   <div id="videos"></div>
-  <div id="messageload"></div> <!-- Adicionado o container de mensagem -->
+  <div id="messageload"></div> <!-- Container de mensagem de carregamento -->
   
   <script>
     function loadVideosCatalog() {
@@ -63,27 +63,30 @@
           if (result.status !== "success") {
             throw new Error(result.message || "Erro ao carregar vídeos");
           }
-
+          
+          // Log de todos os dados dos vídeos recebidos
+          console.log("Vídeos carregados:", result.data);
+      
           // Limpa a mensagem de loading
           messageLoad.innerHTML = "";
           
-          // Itera sobre o array de vídeos que está em result.data
+          // Itera sobre o array de vídeos em result.data e cria os elementos
           result.data.forEach(video => {
+            console.log("Dados do vídeo:", video); // Log individual de cada vídeo
             const figure = document.createElement("figure");
-            // Armazena o id do vídeo num atributo de dado
-            figure.setAttribute("data-id", video.id);
-            
-            // Podemos também armazenar outros dados caso necessário, como:
-            // figure.setAttribute("data-title", video.title);
-            // figure.setAttribute("data-thumbnail", video.thumbnail);
-            // etc.
-
+            // Armazena os dados do vídeo usando dataset
+            figure.dataset.video = video.video;
+            figure.dataset.title = video.title;
+            figure.dataset.thumbnail = video.thumbnail;
+            figure.dataset.description = video.description;
+            figure.dataset.duration = video.duration;
+      
             figure.innerHTML = `
               <img src="http://127.0.0.1:5000/api/thumbnails/${video.thumbnail}"
                 alt="${video.title}"
                 class="images"
                 onclick="videoSelected(this)">
-
+      
               <figcaption>
                 <div class="video-title">${video.title}</div>
                 <div class="video-description">${video.description}</div>
@@ -93,7 +96,6 @@
             container.appendChild(figure);
           });
           
-          // Exibe uma mensagem final após o carregamento
           messageLoad.innerHTML = `<p>${result.data.length} vídeos carregados.</p>`;
         })
         .catch(error => {
@@ -101,38 +103,35 @@
           messageLoad.innerHTML = `<p>Erro ao carregar resultados: ${error.message}</p>`;
         });
     }
+    
+    function videoSelected(imgElement) {
+      const figure = imgElement.closest("figure");
+      if (!figure) {
+        console.error("Elemento <figure> não encontrado");
+        return;
+      }
 
-    function videoSelected(title, thumbnail, description, duration) {
-      // Build the query parameters using URLSearchParams for proper encoding
-      const params = new URLSearchParams({
-          title: title,
-          thumbnail: thumbnail,
-          description: description,
-          duration: duration
-      });
+      const title = figure.dataset.title;
+      const thumbnail = figure.dataset.thumbnail;
+      const description = figure.dataset.description;
+      const duration = figure.dataset.duration;
+      const video = figure.dataset.video;
 
-      // Append the parameters to the URL (for a GET request)
-      fetch(`http://127.0.0.1:8080/api/stream/?${params.toString()}`)
-          .then(response => response.json())
-          .then(result => {
-              console.info("Video selecionado foi:", title);
-              // Optionally, store the response data in sessionStorage
-              sessionStorage.setItem("videoData", JSON.stringify(result));
-              window.location.href = `/stream.html`;
-          })
-          .catch(error => {
-              console.error('Erro:', error);
-          });
+      const videoData = {
+        video: video,  
+        title: title,
+        description: description,
+        duration: duration
+      };
+
+      // Log dos dados do vídeo selecionado
+      console.log("Vídeo selecionado:", videoData);
+
+      sessionStorage.setItem("videoData", JSON.stringify(videoData));
+      window.location.href = "/stream.html";
     }
 
-
-
-
-
-
-
-
-    window.onload = loadVideosCatalog;
+    document.addEventListener("DOMContentLoaded", loadVideosCatalog);
   </script>
 </body>
 </html>

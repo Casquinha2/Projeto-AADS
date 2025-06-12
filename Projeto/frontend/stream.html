@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Video Player</title>
+  <title>Video Player - Debug</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
   <style>
     .video-container {
@@ -29,43 +29,69 @@
       <h1 class="text-2xl font-bold mb-4">Video Player</h1>
 
       <div class="video-container">
-        <!-- The video element that will play the MP4 file -->
+        <!-- Elemento que reproduzirá o vídeo -->
         <video id="my-video" controls preload="auto">
           Your browser does not support the video tag.
         </video>
       </div>
 
-      <div class="mt-4" id="video-details">
-        <!-- Optional: Display video title/description here -->
-      </div>
+      <!-- Div para exibir os detalhes do vídeo -->
+      <div class="mt-4" id="video-details"></div>
     </div>
   </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const videoDataString = sessionStorage.getItem("videoData");
+      // Recupera o objeto armazenado no sessionStorage
+      const videoDataString = sessionStorage.getItem("videoData");
+      console.log("Retrieved videoDataString:", videoDataString);
 
-        if (videoDataString) {
-            const videoData = JSON.parse(videoDataString);
-            console.log("Video data from sessionStorage:", videoData);
+      if (videoDataString) {
+        try {
+          const videoData = JSON.parse(videoDataString);
+          console.log("Parsed videoData:", videoData);
 
-            // Set the MP4 file as the source for the video player
-            const videoElement = document.getElementById('my-video');
-            videoElement.src = `http://127.0.0.1:8080${videoData.mp4_url}`;
+          const videoElement = document.getElementById('my-video');
+          if (!videoElement) {
+            console.error("Elemento de vídeo não encontrado.");
+            return;
+          }
 
-            // Display additional details (title, description, duration)
-            const detailsDiv = document.getElementById('video-details');
-            detailsDiv.innerHTML = `
-                <h2 class="text-xl font-bold">${videoData.title}</h2>
-                <p>${videoData.description}</p>
-                <p><strong>Duration:</strong> ${videoData.duration || "N/A"}</p>
-            `;
-        } else {
-            console.error("No video data found in sessionStorage.");
+          // Monta a URL completa para o vídeo
+          const videoURL = `http://127.0.0.1:7000/api/videos/${videoData.video}`;
+          console.log("Constructed video URL:", videoURL);
+
+          // Define a URL como fonte do elemento video
+          videoElement.src = videoURL;
+
+          // Eventos para depuração de carregamento do vídeo
+          videoElement.addEventListener('error', (e) => {
+            console.error("Erro ao carregar o vídeo:", e);
+          });
+
+          videoElement.addEventListener('loadedmetadata', () => {
+            console.log("Metadados carregados:", videoElement.duration);
+          });
+
+
+          videoElement.addEventListener('canplay', () => {
+            console.log("O vídeo está pronto para ser reproduzido.");
+          });
+          
+          // Exibe os detalhes do vídeo na página
+          const detailsDiv = document.getElementById('video-details');
+          detailsDiv.innerHTML = `
+            <h2 class="text-xl font-bold">${videoData.title}</h2>
+            <p>${videoData.description}</p>
+            <p><strong>Duração:</strong> ${videoData.duration || "N/A"}</p>
+          `;
+        } catch (e) {
+          console.error("Erro ao analisar os dados do sessionStorage:", e);
         }
+      } else {
+        console.error("Nenhum dado de vídeo encontrado no sessionStorage.");
+      }
     });
-
-
   </script>
 </body>
 </html>
