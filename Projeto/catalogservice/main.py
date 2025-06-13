@@ -18,14 +18,14 @@ try:
 except Exception as e:
     app.logger.error(f"Erro ao conectar à MongoDB: {e}")
 
-```
+'''
 # Essa função garante que todas as respostas HTML incluam UTF-8 no Content-Type
 @app.after_request
 def set_charset(response):
     if response.content_type.startswith("text/html"):
         response.headers['Content-Type'] = 'text/html; charset=utf-8'
     return response
-```
+'''
 
 @app.route('/api/video', methods=['GET'])
 def show_videos():
