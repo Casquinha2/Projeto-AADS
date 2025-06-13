@@ -36,6 +36,8 @@ def show_videos():
         # Converte o campo _id para string em cada documento
         for video in videos:
             video['_id'] = str(video['_id'])
+        
+        '''videos.sort("views")'''
             
         app.logger.info(f"Resultados enviados: {videos}")
         return jsonify({
@@ -58,24 +60,6 @@ def get_thumbnail(filename):
     response = send_from_directory(thumb_folder, filename)
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
-
-
-
-
-
-@app.route('/api/video/<string:videoId>')
-def video_by_id(videoId):
-    try:
-        # Converte o id de string para ObjectId
-        video = videos_collection.find_one({"_id": ObjectId(videoId)})
-        if video:
-            # Como o ObjectId não é serializável, convertemos ele para string
-            video['_id'] = str(video['_id'])
-            return jsonify(video)
-        else:
-            return jsonify({"message": "Nenhum vídeo encontrado com esse id"}), 404
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 
 

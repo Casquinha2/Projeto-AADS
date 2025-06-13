@@ -28,10 +28,6 @@ cd ../catalogservice
 docker build --no-cache -t catalogservice:v1 .
 minikube image load catalogservice:v1
 
-cd ../streamingservice
-docker build --no-cache -t streamingservice:v1 .
-minikube image load streamingservice:v1
-
 cd ../uploadservice
 docker build --no-cache -t uploadservice:v1 .
 minikube image load uploadservice:v1
@@ -48,9 +44,6 @@ kubectl apply -f frontend-service.yaml
 kubectl apply -f catalogservice-deployment.yaml
 kubectl apply -f catalogservice-service.yaml
 
-kubectl apply -f streamingservice-deployment.yaml
-kubectl apply -f streamingservice-service.yaml
-
 kubectl apply -f uploadservice-deployment.yaml
 kubectl apply -f uploadservice-service.yaml
 
@@ -61,6 +54,13 @@ RUN!!
 
 kubectl port-forward service/catalogservice 5000:5000
 kubectl port-forward service/uploadservice 7000:7000
+
+
+minikube service frontend
+
+
+
+
 kubectl port-forward service/streamingservice 8080:8080
 
 minikube service frontend

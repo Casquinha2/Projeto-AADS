@@ -76,7 +76,8 @@ def upload_video():
             "thumbnail": thumbnailfile.filename,
             "video": videofile.filename,
             "description": description,
-            "duration": duration
+            "duration": duration,
+            "views": 0
         })
 
         app.logger.info("Upload realizado com sucesso!")
@@ -115,31 +116,37 @@ def get_video_duration(video_path):
         return None
     
 
-@app.route('/api/edit', methods =['POST'])
+@app.route('/api/edit', methods=['POST'])
 def edit_video():
     try:
         videoId = request.form.get('videoId')
-
         title = request.form.get('title')
         description = request.form.get('description')
         thumbnailfile = request.files.get('thumbnail')
         videofile = request.files.get('video')
         
-        video = None
-
+        # Consulta o vídeo no banco de dados
         try:
             video = videos_collection.find_one(ObjectId(videoId))
-            if video == None:
+            if video is None:
                 raise Exception
         except:
-            return jsonify({'message': 'Video com id: {videoId} não encontrado'})
+            return jsonify({
+                'status': 'error',
+                'message': f'Vídeo com id: {videoId} não encontrado'
+            })
 
+        # Se não houver dados para atualizar, retorna um erro
         if not title and not thumbnailfile and not videofile and not description:
             return jsonify({
                 "status": "error",
                 "message": f"Dados não fornecidos. Title: {title}, Description: {description}"
             }), 400
 
+        # Inicializa a variável 'duration' com o valor atual salvo no vídeo
+        duration = video.get('duration')
+        
+        # Se um novo thumbnail for enviado, salve-o
         if thumbnailfile:
             thumb_folder = "/Storage/Thumbnails"
             os.makedirs(thumb_folder, exist_ok=True)
@@ -147,42 +154,47 @@ def edit_video():
             app.logger.info(f"Tentando salvar thumbnail em: {thumb_path}")
             thumbnailfile.save(thumb_path)
         
+        # Se um novo vídeo for enviado, salve-o e atualize a duração
         if videofile:
-            video_folder =  "/Storage/Videos"
+            video_folder = "/Storage/Videos"
             os.makedirs(video_folder, exist_ok=True)
             video_path = os.path.join(video_folder, videofile.filename)
             app.logger.info(f"Tentando salvar vídeo em: {video_path}")
             videofile.save(video_path)
             duration = get_video_duration(video_path)
         
-
+        # Use os dados antigos caso os novos campos estejam vazios
         if title == "":
             title = video['title']
-            
         if description == "":
             description = video['description']
 
-        videos_collection.find_one_and_update({"_id": ObjectId(videoId)},
-            {"$set": {"title": title,
-                        "thumbnail": thumbnailfile.filename,
-                        "video": videofile.filename,
-                        "description": description,
-                        "duration": duration}})
+        # Atualiza o banco de dados, usando os nomes dos arquivos se novos foram enviados
+        videos_collection.find_one_and_update(
+            {"_id": ObjectId(videoId)},
+            {"$set": {
+                "title": title,
+                "thumbnail": thumbnailfile.filename if thumbnailfile else video.get('thumbnail'),
+                "video": videofile.filename if videofile else video.get('video'),
+                "description": description,
+                "duration": duration
+            }}
+        )
         
         return jsonify({'message': 'A edição foi bem sucedida'})
     except Exception as e:
-        return jsonify({'Error': 'Erro {e}'})
+        return jsonify({'status': 'error', 'message': f'Erro: {e}'})
+
+
     
-@app.route('/api/delete', methods =['GET']) 
-def delete_video():
+@app.route('/api/delete/<string:videoId>', methods=['GET'])
+def delete_video(videoId):
     try:
-        videoId = request.get_json()
-
         videos_collection.find_one_and_delete({'_id': ObjectId(videoId)})
-
-        return jsonify({'message': 'Video apagado com sucesso'})
+        return jsonify({'status': 'success', 'message': 'Video apagado com sucesso'})
     except Exception as e:
-        return jsonify({'Error': 'Erro {e}'})
+        return jsonify({'status': 'error', 'message': f'Erro: {e}'})
+
     
 
 
