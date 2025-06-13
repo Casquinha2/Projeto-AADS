@@ -18,27 +18,23 @@ try:
 except Exception as e:
     app.logger.error(f"Erro ao conectar à MongoDB: {e}")
 
-'''
 # Essa função garante que todas as respostas HTML incluam UTF-8 no Content-Type
 @app.after_request
 def set_charset(response):
     if response.content_type.startswith("text/html"):
         response.headers['Content-Type'] = 'text/html; charset=utf-8'
     return response
-'''
 
 @app.route('/api/video', methods=['GET'])
 def show_videos():
     try:
         # Busca todos os documentos sem projeção, ou seja, todos os campos
-        videos = list(videos_collection.find({}))
-        
+        videos = list(videos_collection.find({}).sort("views", -1))
+
         # Converte o campo _id para string em cada documento
         for video in videos:
             video['_id'] = str(video['_id'])
         
-        '''videos.sort("views")'''
-            
         app.logger.info(f"Resultados enviados: {videos}")
         return jsonify({
             "status": "success",
@@ -61,6 +57,25 @@ def get_thumbnail(filename):
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
 
+
+@app.route('/api/views/<string:videoId>', methods=['GET'])
+def add_views(videoId):
+    try:
+        # Incrementa a view em 1 de forma atômica
+        updated_video = videos_collection.find_one_and_update(
+            {"_id": ObjectId(videoId)},
+            {"$inc": {"views": 1}},
+        )
+        return jsonify({
+            "status": "success",
+            "message": "Views incrementadas com sucesso.",
+            "views": updated_video.get("views", 0)
+        })
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"Erro: {e}"
+        })
 
 
 @app.route('/health', methods=['GET'])

@@ -38,6 +38,19 @@
     #videos figcaption {
       margin-top: 15px;
     }
+    #videos column{
+      display: flex;
+      justify-content: space-between;
+    }
+    #videos .left-column {
+      text-align: left;
+      width: 50%;
+    }
+    #videos .right-column {
+      text-align: right;
+      width: 50%;
+    }
+
   </style>
 </head>
 <body>
@@ -80,6 +93,7 @@
             figure.dataset.thumbnail = video.thumbnail;
             figure.dataset.description = video.description;
             figure.dataset.duration = video.duration;
+            figure.dataset.views = video.views
       
             figure.innerHTML = `
               <img src="http://127.0.0.1:5000/api/thumbnails/${video.thumbnail}"
@@ -88,9 +102,16 @@
                 onclick="videoSelected(this)">
       
               <figcaption>
-                <div class="video-title">${video.title}</div>
-                <div class="video-description">${video.description}</div>
-                <div class="video-duration">Duração: ${video.duration || "N/D"}</div>
+                <div class="container">
+                  <div class="left-column">
+                    <div class="video-title">${video.title}</div>
+                    <div class="video-description">${video.description}</div>
+                  </div>
+                  <div class="right-column">
+                    <div class="video-duration">Duração: ${video.duration || "N/D"}</div>
+                    <div class="video-views">Visualizações: ${video.views}</div>
+                  </div>
+                </div>
               </figcaption>
             `;
             container.appendChild(figure);
@@ -116,6 +137,7 @@
       const description = figure.dataset.description;
       const duration = figure.dataset.duration;
       const video = figure.dataset.video;
+      const videoId = figure.dataset.videoId
 
       const videoData = {
         video: video,  
@@ -123,6 +145,8 @@
         description: description,
         duration: duration
       };
+
+      fetch(`http://127.0.0.1:5000/api/views/${videoId}`)
 
       // Log dos dados do vídeo selecionado
       console.log("Vídeo selecionado:", videoData);

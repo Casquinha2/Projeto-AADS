@@ -195,47 +195,6 @@ def delete_video(videoId):
     except Exception as e:
         return jsonify({'status': 'error', 'message': f'Erro: {e}'})
 
-    
-
-
-
-'''@app.route('/api/stream/', methods=['GET'])
-def stream_video():
-    try:
-        title = request.args.get('title')
-        thumbnail = request.args.get('thumbnail')
-        description = request.args.get('description')
-        duration = request.args.get('duration')
-
-        videos = list(videos_collection.find({}))
-
-        # Initialize video as None before the loop
-        video = None  
-
-        for v in videos:  # Rename to avoid confusion
-            if title == v['title'] and thumbnail == v['thumbnail'] and description == v['description'] and duration == v['duration']:
-                video = v
-                break
-
-        if video:  # Check if video was found
-            mp4_filename = video['video']
-            mp4_url = get_video(mp4_filename)
-            return jsonify({
-                "mp4_url": mp4_url,
-                "title": video['title'],
-                "description": video['description'],
-                "duration": video['duration']
-            })
-        else:
-            return jsonify({"error": "video nao encontrado"}), 404
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    
-
-def get_video(filename):
-    video_folder = "/Storage/Videos"
-    return send_from_directory(video_folder, filename)'''
 
 @app.route('/api/videos/<path:filename>', methods=['GET'])
 def get_video(filename):
