@@ -36,6 +36,8 @@ def show_videos():
         # Converte o campo _id para string em cada documento
         for video in videos:
             video['_id'] = str(video['_id'])
+        
+        '''videos.sort("views")'''
             
         app.logger.info(f"Resultados enviados: {videos}")
         return jsonify({
@@ -58,6 +60,7 @@ def get_thumbnail(filename):
     response = send_from_directory(thumb_folder, filename)
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
+
 
 
 @app.route('/health', methods=['GET'])

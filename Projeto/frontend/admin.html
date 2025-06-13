@@ -1,230 +1,397 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>UALFlix</title>
-    <style>
-        /* General header and button styling */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 20px 5px 20px;
-            margin-bottom: 50px;
-        }
-        .header button {
-            padding: 10px 20px;
-            font-size: 16px;
-        }
-        body {
-            margin: 20px;
-        }
-        form {
-            width: 92%;
-            padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        form div {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input[type="text"],
-        input[type="file"],
-        textarea {
-            width: 100%;
-            padding: 8px;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        /* Layout container divided into two columns */
-        #layout {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
-            padding: 20px;
-        }
-        /* Videos container styling */
-        #videos {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-        }
-        /* Styling the figure element to center its contents */
-        #videos figure {
-            text-align: center;
-            margin: 0;
-        }
-        #videos figcaption {
-            margin-top: 15px;
-        }
-        #videos .buttonslayout {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 5px;
-        }
-        .img {
-            width: 300px;
-            height: 200px;
-            object-fit: contain;
-        }
-        .btn-small {
-            padding: 5px 10px;
-            font-size: 12px;
-            border-radius: 4px;
-            margin: 2px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>UALFlix</title>
+  <style>
+    /* General header and button styling */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 20px 5px 20px;
+      margin-bottom: 50px;
+    }
+    .header button {
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+    body {
+      margin: 20px;
+    }
+    form {
+      width: 92%;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    form div {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input[type="text"],
+    input[type="file"],
+    textarea {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    /* Layout container divided into two columns */
+    #layout {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 20px;
+      padding: 20px;
+    }
+    /* Videos container styling */
+    #videos {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+    /* Styling the figure element to center its contents */
+    #videos figure {
+      text-align: center;
+      margin: 0;
+    }
+    #videos figcaption {
+      margin-top: 15px;
+    }
+    #videos .buttonslayout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
+    }
+    .img {
+      width: 300px;
+      height: 200px;
+      object-fit: contain;
+    }
+    .btn-small {
+      padding: 5px 10px;
+      font-size: 12px;
+      border-radius: 4px;
+      margin: 2px;
+    }
+    /* Modal styling */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+    }
+    .modal-content {
+      background: #fff;
+      margin: 10% auto;
+      padding: 20px;
+      width: 80%;
+      max-width: 500px;
+      border-radius: 8px;
+      position: relative;
+    }
+    .close-modal {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 20px;
+      cursor: pointer;
+    }
+    /* Popup style */
+    #popup-message {
+      display: none;
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #28a745;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 5px;
+      z-index: 1100;
+    }
+  </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Painel de Administrador</h1>
-        <button onclick="window.location.href='/index.html';">Sair de administrador</button>
-    </div>
+  <div class="header">
+    <h1>Painel de Administrador</h1>
+    <button onclick="window.location.href='/index.html';">Sair de administrador</button>
+  </div>
 
-    <!-- Parent container with two columns -->
-    <div id="layout">
-        <!-- Left Column: Videos List -->
-        <div id="videosContainer">
-            <h2>Vídeos</h2>
-            <div id="videos"></div>
-        </div>
-        
-        <!-- Right Column: Upload Form -->
-        <div id="formContainer">
-            <h2>Upload Video</h2>
-            <form id="uploadForm" method="POST" enctype="multipart/form-data" onsubmit="upload(event)">
-                <div>
-                    <label for="title">Video Title:</label>
-                    <input type="text" name="title" placeholder="Enter the video title" required>
-                </div>
-                <div>
-                    <label for="thumbnail">Thumbnail Image:</label>
-                    <input type="file" name="thumbnail" accept="image/*">
-                </div>
-                <div>
-                    <label for="video">Video File (MP4):</label>
-                    <input type="file" name="video" accept="video/mp4">
-                </div>
-                <div>
-                    <label for="description">Description:</label>
-                    <input type="text" name="description" placeholder="Enter the video description">
-                </div>
-                <div>
-                    <button type="submit">Upload Video</button>
-                </div>
-            </form>
-            <div id="messageupload"></div>
-        </div>
-
-        <!-- Feedback for loading videos -->
-        <div id="messageload"></div>
+  <!-- Parent container with two columns -->
+  <div id="layout">
+    <!-- Left Column: Videos List -->
+    <div id="videosContainer">
+      <h2>Vídeos</h2>
+      <div id="videos"></div>
     </div>
     
-    <script>
-        // Function to load videos from the API endpoint
-        function loadVideos() {
-            const container = document.getElementById("videos");
-            const messageLoad = document.getElementById("messageload");
-            console.log("Container element:", container);
-            console.log("Message Load element:", messageLoad);
+    <!-- Right Column: Upload Form -->
+    <div id="formContainer">
+      <h2>Upload Video</h2>
+      <form id="uploadForm" method="POST" enctype="multipart/form-data" onsubmit="upload(event)">
+        <div>
+          <label for="title">Video Title:</label>
+          <input type="text" name="title" placeholder="Enter the video title" required>
+        </div>
+        <div>
+          <label for="thumbnail">Thumbnail Image:</label>
+          <input type="file" name="thumbnail" accept="image/*">
+        </div>
+        <div>
+          <label for="video">Video File (MP4):</label>
+          <input type="file" name="video" accept="video/mp4">
+        </div>
+        <div>
+          <label for="description">Description:</label>
+          <input type="text" name="description" placeholder="Enter the video description">
+        </div>
+        <div>
+          <button type="submit">Upload Video</button>
+        </div>
+      </form>
+      <div id="messageupload"></div>
+    </div>
+
+    <!-- Feedback for loading videos -->
+    <div id="messageload"></div>
+  </div>
+    
+  <!-- Edit Modal for updating video info -->
+  <div id="edit-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" id="close-modal">&times;</span>
+      <h2>Editar Vídeo</h2>
+      <form id="editForm" enctype="multipart/form-data">
+        <input type="hidden" name="videoId" id="videoId">
+        <div>
+          <label for="edit-title">Título:</label>
+          <input type="text" name="title" id="edit-title" >
+        </div>
+        <div>
+          <label for="edit-description">Descrição:</label>
+          <textarea name="description" id="edit-description" ></textarea>
+        </div>
+        <div>
+          <label for="edit-thumbnail">Thumbnail:</label>
+          <input type="file" name="thumbnail" id="edit-thumbnail">
+        </div>
+        <div>
+          <label for="edit-video">Vídeo:</label>
+          <input type="file" name="video" id="edit-video">
+        </div>
+        <div>
+          <button type="submit" class="btn-small">Salvar Alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Popup Message -->
+  <div id="popup-message"></div>
+
+  <script>
+    // Função para carregar os vídeos da API
+    function loadVideos() {
+      const container = document.getElementById("videos");
+      const messageLoad = document.getElementById("messageload");
+      console.log("Container element:", container);
+      console.log("Message Load element:", messageLoad);
+      
+      container.innerHTML = "";  
+      messageLoad.innerHTML = "<p>Carregando vídeos...</p>";
+      
+      fetch('http://127.0.0.1:5000/api/video')
+        .then(response => {
+          console.log("Response status:", response.status);
+          return response.json();
+        })
+        .then(result => {
+          console.log("API response:", result);
+          if (result.status !== "success") {
+            throw new Error(result.message || "Erro ao carregar vídeos");
+          }
+          
+          // Limpa o feedback de carregamento
+          messageLoad.innerHTML = "";
+          
+          // Itera sobre os vídeos e cria elementos para cada um
+          result.data.forEach(video => {
+            console.info("Vídeo encontrado:", video);
+            const figure = document.createElement("figure");
             
-            container.innerHTML = "";  
-            messageLoad.innerHTML = "<p>Carregando vídeos...</p>";
+            // Armazena os dados do vídeo usando dataset
+            figure.dataset.id = video._id; // Armazena o ID do vídeo
+            figure.dataset.video = video.video;
+            figure.dataset.title = video.title;
+            figure.dataset.thumbnail = video.thumbnail;
+            figure.dataset.description = video.description;
             
-            fetch('http://127.0.0.1:5000/api/video')
-                .then(response => {
-                    console.log("Response status:", response.status);
-                    return response.json();
-                })
-                .then(result => {
-                    console.log("API response:", result);
-                    if (result.status !== "success") {
-                        throw new Error(result.message || "Erro ao carregar vídeos");
-                    }
-
-                    // Clear the loading message
-                    messageLoad.innerHTML = "";
-                    
-                    // Iterate over the videos from result.data
-                    result.data.forEach(video => {
-                        console.info("Vídeo encontrado:", video);
-                        const figure = document.createElement("figure");
-                        
-                        // Armazena o ID como um atributo de dados no elemento <figure>
-                        figure.setAttribute('data-id', video.id); 
-
-                        figure.innerHTML = `
-                            <img src="http://127.0.0.1:5000/api/thumbnails/${video.thumbnail}" alt="${video.title}" class="img">
-                            <figcaption>
-                                <div class="video-title">${video.title}</div>
-                                <div class="video-description">${video.description}</div>
-                                <div class="video-duration">Duração: ${video.duration || "N/D"}</div>
-                                <div class="buttonslayout">
-                                    <button class="btn-small" onclick="editVideo('${video.id}')">Editar</button>
-                                    <button class="btn-small" onclick="deleteVideo('${video.id}')">Deletar</button>
-                                </div>
-                            </figcaption>
-                        `;
-                        
-                        container.appendChild(figure);
-                    });
-
-                    
-                    // Update the feedback message
-                    messageLoad.innerHTML = `<p>Vídeos carregados: ${result.data.length}</p>`;
-                })
-                .catch(error => {
-                    console.error('Erro:', error);
-                    messageLoad.innerHTML = `<p>Erro ao carregar resultados: ${error.message}</p>`;
-                });
+            figure.innerHTML = `
+              <img src="http://127.0.0.1:5000/api/thumbnails/${video.thumbnail}" alt="${video.title}" class="img">
+              <figcaption>
+                <div class="video-title">${video.title}</div>
+                <div class="video-description">${video.description}</div>
+                <div class="video-duration">Duração: ${video.duration || "N/D"}</div>
+                <div class="buttonslayout">
+                  <button class="btn-small" onclick="openEditModal(this.closest('figure'))">Editar</button>
+                  <button class="btn-small" onclick="deleteVideo(this.closest('figure'))">Deletar</button>
+                </div>
+              </figcaption>
+            `;
+            
+            container.appendChild(figure);
+          });
+          
+          // Atualiza a mensagem de feedback
+          messageLoad.innerHTML = `<p>Vídeos carregados: ${result.data.length}</p>`;
+        })
+        .catch(error => {
+          console.error('Erro:', error);
+          messageLoad.innerHTML = `<p>Erro ao carregar resultados: ${error.message}</p>`;
+        });
+    }
+    
+    // Função para tratar o upload de vídeos
+    function upload(event) {
+      event.preventDefault(); // Previne o envio padrão do formulário
+      
+      const form = document.getElementById("uploadForm");
+      const formData = new FormData(form);
+      
+      fetch("http://127.0.0.1:7000/api/upload", {
+        method: "POST",
+        body: formData,
+      })
+      .then(response => {
+        console.log("Upload response status:", response.status);
+        return response.json();
+      })
+      .then(data => {
+        console.info("Video carregado:", data);
+        const messageDiv = document.getElementById("messageupload");
+        if (data.status && data.status === "error") {
+          messageDiv.innerHTML = `<p style="color: red;">Erro: ${data.message}</p>`;
+        } else {
+          messageDiv.innerHTML = `<p style="color: green;">Upload realizado com sucesso!</p>`;
+          form.reset();  // Limpa o formulário de upload
+          loadVideos();  // Atualiza a lista de vídeos
         }
+        console.log("Resposta do servidor:", data);
+      })
+      .catch(error => {
+        console.error("Erro:", error);
+        const messageDiv = document.getElementById("messageupload");
+        messageDiv.innerHTML = `<p style="color: red;">Ocorreu um erro no upload: ${error.message}</p>`;
+      });
+    }
+    
+    // Abre a modal de edição, pré-preenchendo com os dados do vídeo
+    function openEditModal(videoElement) {
+      // Recupera os dados do vídeo
+      const videoId = videoElement.dataset.id || "";
+      const title = videoElement.dataset.title || "";
+      const description = videoElement.dataset.description || "";
+  
+      // Preenche os campos do formulário de edição
+      document.getElementById("videoId").value = videoId;
+      document.getElementById("edit-title").value = title;
+      document.getElementById("edit-description").value = description;
+      // Limpa os inputs de arquivo caso haja algo antigo
+      document.getElementById("edit-thumbnail").value = "";
+      document.getElementById("edit-video").value = "";
+      
+      // Exibe a modal
+      document.getElementById("edit-modal").style.display = "block";
+    }
+    
+    // Fecha a modal quando o botão "x" é clicado
+    document.getElementById("close-modal").addEventListener("click", function() {
+      document.getElementById("edit-modal").style.display = "none";
+    });
+    
+    // Exibe um popup com feedback da operação
+    function showPopup(message, success = true) {
+      const popup = document.getElementById("popup-message");
+      popup.textContent = message;
+      popup.style.background = success ? "#28a745" : "#dc3545";
+      popup.style.display = "block";
+      setTimeout(() => {
+        popup.style.display = "none";
+      }, 3000);
+    }
+    
+    // Trata o envio do formulário de edição de vídeo
+        document.getElementById("editForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+        
+        const form = e.target;
+        const formData = new FormData(form);
+        
+        fetch("http://127.0.0.1:7000/api/edit", {
+            method: "POST",
+            body: formData,
+        })
+        .then(response => {
+            console.log("Edit status: ", response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.info("Video editado:", data);
+            if (data.status && data.status === "error") {
+            showPopup(data.message || "Erro ao editar o vídeo", false);
+            } else {
+            showPopup(data.message || "Edição realizada com sucesso", true);
+            loadVideos();  // Atualiza a lista de vídeos
+            }
+            // Fecha a modal após o envio
+            document.getElementById("edit-modal").style.display = "none";
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            showPopup("Erro ao editar o vídeo", false);
+        });
+        });
+    
+    // Função placeholder para exclusão de vídeo (implemente conforme necessário)
+    function deleteVideo(videoElement) {
+        const videoId = videoElement.dataset.id;
+        console.log("Excluir vídeo com ID:", videoId);
+        
+        fetch(`http://127.0.0.1:7000/api/delete/${videoId}`)
+        .then(response => {
+            console.log("Delete response status:", response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.info("Resultado da exclusão:", data);
+            if (data.status && data.status === "error") {
+                showPopup(data.message || "Erro ao apagar o vídeo", false);
+            } else {
+                showPopup(data.message || "Vídeo apagado com sucesso", true);
+                loadVideos();  // Atualiza a lista de vídeos após a exclusão
+            }
+        })
+        .catch(error => {
+            console.error("Erro ao apagar vídeo:", error);
+            showPopup("Erro ao apagar o vídeo", false);
+        });
+    }
 
-        // Function to handle video upload
-        function upload(event) {
-            event.preventDefault(); // Prevent default form submission
-
-            const form = document.getElementById("uploadForm");
-            const formData = new FormData(form);
-
-            fetch("http://127.0.0.1:7000/api/upload", {
-                method: "POST",
-                body: formData,
-            })
-            .then(response => {
-                console.log("Upload response status:", response.status);
-                return response.json();
-            })
-            .then(data => {
-                console.info("Video carregado:", data);
-                const messageDiv = document.getElementById("messageupload");
-                if (data.status && data.status === "error") {
-                    messageDiv.innerHTML = `<p style="color: red;">Erro: ${data.message}</p>`;
-                } else {
-                    messageDiv.innerHTML = `<p style="color: green;">Upload realizado com sucesso!</p>`;
-                    form.reset();  // Clear the upload form
-                    loadVideos();  // Refresh video list
-                }
-                console.log("Resposta do servidor:", data);
-            })
-            .catch(error => {
-                console.error("Erro:", error);
-                const messageDiv = document.getElementById("messageupload");
-                messageDiv.innerHTML = `<p style="color: red;">Ocorreu um erro no upload: ${error.message}</p>`;
-            });
-        }
-
-        // Call loadVideos when the DOM is fully loaded.
-        document.addEventListener("DOMContentLoaded", loadVideos);
-    </script>
+    
+    // Chama loadVideos quando o DOM estiver completamente carregado.
+    document.addEventListener("DOMContentLoaded", loadVideos);
+  </script>
 </body>
 </html>
