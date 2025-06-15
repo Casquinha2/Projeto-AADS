@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Video Player - Debug</title>
+  <title>Stream</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
   <style>
     .video-container {
@@ -22,16 +22,21 @@
 <body class="bg-gray-100 min-h-screen">
   <div class="container mx-auto px-4 py-8">
     <div class="mb-4">
-      <a href="/" class="text-blue-500 hover:underline">&larr; Back to all videos</a>
+      <button 
+        class="border border-gray-300 px-4 py-2 rounded hover:border-gray-500" 
+        onclick="window.location.href='/admin.html';">
+        Catálogo
+      </button>
+
     </div>
 
     <div class="bg-white rounded-lg shadow-md p-6">
-      <h1 class="text-2xl font-bold mb-4">Video Player</h1>
+      <h1 class="text-2xl font-bold mb-4">Video</h1>
 
       <div class="video-container">
         <!-- Elemento que reproduzirá o vídeo -->
         <video id="my-video" controls preload="auto">
-          Your browser does not support the video tag.
+          Este browser não suporta este tipo de ficheiro.
         </video>
       </div>
 
