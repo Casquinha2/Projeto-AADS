@@ -77,9 +77,9 @@ def upload_video():
             "video": videofile.filename,
             "description": description,
             "duration": duration,
-            "views": 0
         })
 
+        app.logger.info(f"Videos na Base de Dados: {videos_collection.find({})}")
         app.logger.info("Upload realizado com sucesso!")
         # Resposta para o frontend informando sucesso e a duração do vídeo
         return jsonify({
@@ -95,7 +95,6 @@ def upload_video():
             "status": "error",
             "message": f"Erro ao processar o upload: {str(e)}"
         }), 500
-
 
 
 
@@ -184,8 +183,7 @@ def edit_video():
         return jsonify({'message': 'A edição foi bem sucedida'})
     except Exception as e:
         return jsonify({'status': 'error', 'message': f'Erro: {e}'})
-
-
+    
     
 @app.route('/api/delete/<string:videoId>', methods=['GET'])
 def delete_video(videoId):
@@ -195,56 +193,12 @@ def delete_video(videoId):
     except Exception as e:
         return jsonify({'status': 'error', 'message': f'Erro: {e}'})
 
-    
-
-
-
-'''@app.route('/api/stream/', methods=['GET'])
-def stream_video():
-    try:
-        title = request.args.get('title')
-        thumbnail = request.args.get('thumbnail')
-        description = request.args.get('description')
-        duration = request.args.get('duration')
-
-        videos = list(videos_collection.find({}))
-
-        # Initialize video as None before the loop
-        video = None  
-
-        for v in videos:  # Rename to avoid confusion
-            if title == v['title'] and thumbnail == v['thumbnail'] and description == v['description'] and duration == v['duration']:
-                video = v
-                break
-
-        if video:  # Check if video was found
-            mp4_filename = video['video']
-            mp4_url = get_video(mp4_filename)
-            return jsonify({
-                "mp4_url": mp4_url,
-                "title": video['title'],
-                "description": video['description'],
-                "duration": video['duration']
-            })
-        else:
-            return jsonify({"error": "video nao encontrado"}), 404
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    
-
-def get_video(filename):
-    video_folder = "/Storage/Videos"
-    return send_from_directory(video_folder, filename)'''
 
 @app.route('/api/videos/<path:filename>', methods=['GET'])
 def get_video(filename):
     video_folder = "/Storage/Videos"
     response = send_from_directory(video_folder, filename)
     return response
-
-
-
 
 
 if __name__ == '__main__':

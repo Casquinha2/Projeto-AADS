@@ -32,7 +32,10 @@ def show_videos():
     try:
         # Busca todos os documentos sem projeção, ou seja, todos os campos
         videos = list(videos_collection.find({}))
-        
+
+        app.logger.info(f"Videos na Base de Dados: {videos_collection.find({})}")
+        app.logger.info(f"Videos na variavel videos: {videos}")
+
         # Converte o campo _id para string em cada documento
         for video in videos:
             video['_id'] = str(video['_id'])
