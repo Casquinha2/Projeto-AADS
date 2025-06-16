@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>UALFlix</title>
   <style>
-    /* General header and button styling */
     .header {
       display: flex;
       justify-content: space-between;
@@ -46,20 +45,17 @@
       font-size: 16px;
       cursor: pointer;
     }
-    /* Layout container divided into two columns */
     #layout {
       display: grid;
       grid-template-columns: 2fr 1fr;
       gap: 20px;
       padding: 20px;
     }
-    /* Videos container styling */
     #videos {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 20px;
     }
-    /* Styling the figure element to center its contents */
     #videos figure {
       text-align: center;
       margin: 0;
@@ -108,7 +104,6 @@
       font-size: 20px;
       cursor: pointer;
     }
-    /* Popup style */
     #popup-message {
       display: none;
       position: fixed;
@@ -129,15 +124,12 @@
     <button onclick="window.location.href='/index.html';">Sair de administrador</button>
   </div>
 
-  <!-- Parent container with two columns -->
   <div id="layout">
-    <!-- Left Column: Videos List -->
     <div id="videosContainer">
       <h2>Vídeos</h2>
       <div id="videos"></div>
     </div>
     
-    <!-- Right Column: Upload Form -->
     <div id="formContainer">
       <h2>Upload Video</h2>
       <form id="uploadForm" method="POST" enctype="multipart/form-data" onsubmit="upload(event)">
@@ -164,11 +156,9 @@
       <div id="messageupload"></div>
     </div>
 
-    <!-- Feedback for loading videos -->
     <div id="messageload"></div>
   </div>
     
-  <!-- Edit Modal for updating video info -->
   <div id="edit-modal" class="modal">
     <div class="modal-content">
       <span class="close-modal" id="close-modal">&times;</span>
@@ -198,11 +188,9 @@
     </div>
   </div>
 
-  <!-- Popup Message -->
   <div id="popup-message"></div>
 
   <script>
-    // Função para carregar os vídeos da API
     function loadVideos() {
       const container = document.getElementById("videos");
       const messageLoad = document.getElementById("messageload");
@@ -223,16 +211,13 @@
             throw new Error(result.message || "Erro ao carregar vídeos");
           }
           
-          // Limpa o feedback de carregamento
           messageLoad.innerHTML = "";
           
-          // Itera sobre os vídeos e cria elementos para cada um
           result.data.forEach(video => {
             console.info("Vídeo encontrado:", video);
             const figure = document.createElement("figure");
             
-            // Armazena os dados do vídeo usando dataset
-            figure.dataset.id = video._id; // Armazena o ID do vídeo
+            figure.dataset.id = video._id;
             figure.dataset.video = video.video;
             figure.dataset.title = video.title;
             figure.dataset.thumbnail = video.thumbnail;
@@ -254,7 +239,6 @@
             container.appendChild(figure);
           });
           
-          // Atualiza a mensagem de feedback
           messageLoad.innerHTML = `<p>Vídeos carregados: ${result.data.length}</p>`;
         })
         .catch(error => {
@@ -263,9 +247,8 @@
         });
     }
     
-    // Função para tratar o upload de vídeos
     function upload(event) {
-      event.preventDefault(); // Previne o envio padrão do formulário
+      event.preventDefault();
       
       const form = document.getElementById("uploadForm");
       const formData = new FormData(form);
@@ -285,8 +268,8 @@
           messageDiv.innerHTML = `<p style="color: red;">Erro: ${data.message}</p>`;
         } else {
           messageDiv.innerHTML = `<p style="color: green;">Upload realizado com sucesso!</p>`;
-          form.reset();  // Limpa o formulário de upload
-          loadVideos();  // Atualiza a lista de vídeos
+          form.reset();
+          loadVideos();
         }
         console.log("Resposta do servidor:", data);
       })
@@ -297,31 +280,24 @@
       });
     }
     
-    // Abre a modal de edição, pré-preenchendo com os dados do vídeo
     function openEditModal(videoElement) {
-      // Recupera os dados do vídeo
       const videoId = videoElement.dataset.id || "";
       const title = videoElement.dataset.title || "";
       const description = videoElement.dataset.description || "";
   
-      // Preenche os campos do formulário de edição
       document.getElementById("videoId").value = videoId;
       document.getElementById("edit-title").value = title;
       document.getElementById("edit-description").value = description;
-      // Limpa os inputs de arquivo caso haja algo antigo
       document.getElementById("edit-thumbnail").value = "";
       document.getElementById("edit-video").value = "";
       
-      // Exibe a modal
       document.getElementById("edit-modal").style.display = "block";
     }
     
-    // Fecha a modal quando o botão "x" é clicado
     document.getElementById("close-modal").addEventListener("click", function() {
       document.getElementById("edit-modal").style.display = "none";
     });
     
-    // Exibe um popup com feedback da operação
     function showPopup(message, success = true) {
       const popup = document.getElementById("popup-message");
       popup.textContent = message;
@@ -331,8 +307,7 @@
         popup.style.display = "none";
       }, 3000);
     }
-    
-    // Trata o envio do formulário de edição de vídeo
+
         document.getElementById("editForm").addEventListener("submit", function(e) {
         e.preventDefault();
         
@@ -353,9 +328,9 @@
             showPopup(data.message || "Erro ao editar o vídeo", false);
             } else {
             showPopup(data.message || "Edição realizada com sucesso", true);
-            loadVideos();  // Atualiza a lista de vídeos
+            loadVideos();
             }
-            // Fecha a modal após o envio
+
             document.getElementById("edit-modal").style.display = "none";
         })
         .catch(error => {
@@ -364,7 +339,6 @@
         });
         });
     
-    // Função placeholder para exclusão de vídeo (implemente conforme necessário)
     function deleteVideo(videoElement) {
         const videoId = videoElement.dataset.id;
         console.log("Excluir vídeo com ID:", videoId);
@@ -380,7 +354,7 @@
                 showPopup(data.message || "Erro ao apagar o vídeo", false);
             } else {
                 showPopup(data.message || "Vídeo apagado com sucesso", true);
-                loadVideos();  // Atualiza a lista de vídeos após a exclusão
+                loadVideos();
             }
         })
         .catch(error => {
@@ -388,9 +362,6 @@
             showPopup("Erro ao apagar o vídeo", false);
         });
     }
-
-    
-    // Chama loadVideos quando o DOM estiver completamente carregado.
     document.addEventListener("DOMContentLoaded", loadVideos);
   </script>
 </body>

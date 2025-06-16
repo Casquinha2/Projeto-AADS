@@ -6,7 +6,7 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 
 app = Flask(__name__)
-CORS(app)  # Permitir CORS para todas as rotas
+CORS(app)
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -18,26 +18,15 @@ try:
 except Exception as e:
     app.logger.error(f"Erro ao conectar à MongoDB: {e}")
 
-'''
-# Essa função garante que todas as respostas HTML incluam UTF-8 no Content-Type
-@app.after_request
-def set_charset(response):
-    if response.content_type.startswith("text/html"):
-        response.headers['Content-Type'] = 'text/html; charset=utf-8'
-    return response
-'''
 
 @app.route('/api/video', methods=['GET'])
 def show_videos():
     try:
-        # Busca todos os documentos sem projeção, ou seja, todos os campos
         videos = list(videos_collection.find({}))
         
-        # Converte o campo _id para string em cada documento
         for video in videos:
             video['_id'] = str(video['_id'])
-        
-        '''videos.sort("views")'''
+
             
         app.logger.info(f"Resultados enviados: {videos}")
         return jsonify({
