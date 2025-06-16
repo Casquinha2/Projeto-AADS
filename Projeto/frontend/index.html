@@ -47,7 +47,7 @@
   </div>
 
   <div id="videos"></div>
-  <div id="messageload"></div> <!-- Container de mensagem de carregamento -->
+  <div id="messageload"></div>
   
   <script>
     function loadVideosCatalog() {
@@ -64,17 +64,13 @@
             throw new Error(result.message || "Erro ao carregar vídeos");
           }
           
-          // Log de todos os dados dos vídeos recebidos
           console.log("Vídeos carregados:", result.data);
       
-          // Limpa a mensagem de loading
           messageLoad.innerHTML = "";
           
-          // Itera sobre o array de vídeos em result.data e cria os elementos
           result.data.forEach(video => {
-            console.log("Dados do vídeo:", video); // Log individual de cada vídeo
+            console.log("Dados do vídeo:", video);
             const figure = document.createElement("figure");
-            // Armazena os dados do vídeo usando dataset
             figure.dataset.video = video.video;
             figure.dataset.title = video.title;
             figure.dataset.thumbnail = video.thumbnail;
@@ -124,7 +120,6 @@
         duration: duration
       };
 
-      // Log dos dados do vídeo selecionado
       console.log("Vídeo selecionado:", videoData);
 
       sessionStorage.setItem("videoData", JSON.stringify(videoData));
