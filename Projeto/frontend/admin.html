@@ -247,37 +247,38 @@
         });
     }
     
-    function upload(event) {
+    async function upload(event) {
       event.preventDefault();
-      
+
       const form = document.getElementById("uploadForm");
       const formData = new FormData(form);
-      
-      fetch("http://127.0.0.1:7000/api/upload", {
-        method: "POST",
-        body: formData,
-      })
-      .then(response => {
+      const messageDiv = document.getElementById("messageupload");
+
+      try {
+        // Chama o endpoint de upload
+        const response = await fetch("http://127.0.0.1:7000/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+
         console.log("Upload response status:", response.status);
-        return response.json();
-      })
-      .then(data => {
-        console.info("Video carregado:", data);
-        const messageDiv = document.getElementById("messageupload");
-        if (data.status && data.status === "error") {
+
+        // Lê o JSON de resposta
+        const data = await response.json();
+        console.log("Resposta do servidor:", data);
+
+        if (data.status === "error") {
           messageDiv.innerHTML = `<p style="color: red;">Erro: ${data.message}</p>`;
         } else {
           messageDiv.innerHTML = `<p style="color: green;">Upload realizado com sucesso!</p>`;
           form.reset();
-          loadVideos();
+          // Supondo que tens uma função global loadVideos() para actualizar a lista
+          await loadVideos();
         }
-        console.log("Resposta do servidor:", data);
-      })
-      .catch(error => {
+      } catch (error) {
         console.error("Erro:", error);
-        const messageDiv = document.getElementById("messageupload");
         messageDiv.innerHTML = `<p style="color: red;">Ocorreu um erro no upload: ${error.message}</p>`;
-      });
+      }
     }
     
     function openEditModal(videoElement) {

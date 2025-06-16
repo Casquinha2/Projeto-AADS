@@ -76,13 +76,13 @@
             figure.dataset.thumbnail = video.thumbnail;
             figure.dataset.description = video.description;
             figure.dataset.duration = video.duration;
-      
+            figure.dataset.videoId = video._id;
+
             figure.innerHTML = `
               <img src="http://127.0.0.1:5000/api/thumbnails/${video.thumbnail}"
                 alt="${video.title}"
                 class="images"
                 onclick="videoSelected(this)">
-      
               <figcaption>
                 <div class="video-title">${video.title}</div>
                 <div class="video-description">${video.description}</div>
@@ -91,6 +91,7 @@
             `;
             container.appendChild(figure);
           });
+
           
           messageLoad.innerHTML = `<p>${result.data.length} vídeos carregados.</p>`;
         })
@@ -100,7 +101,9 @@
         });
     }
     
-    function videoSelected(imgElement) {
+    async function videoSelected(imgElement) {
+      console.log("Função videoSelected chamada!");
+
       const figure = imgElement.closest("figure");
       if (!figure) {
         console.error("Elemento <figure> não encontrado");
@@ -112,6 +115,8 @@
       const description = figure.dataset.description;
       const duration = figure.dataset.duration;
       const video = figure.dataset.video;
+      const videoId = figure.dataset.videoId
+
 
       const videoData = {
         video: video,  
@@ -120,11 +125,29 @@
         duration: duration
       };
 
-      console.log("Vídeo selecionado:", videoData);
+      console.log("Enviando request para incrementar views com videoId:", videoId);
 
+      try {
+        const resp = await fetch(`http://127.0.0.1:5000/api/views/${videoId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!resp.ok) {
+          console.error('Falha ao incrementar views:', resp.statusText);
+        } else {
+          const data = await resp.json();
+          console.log('Views atualizadas:', data.views);
+        }
+      } catch (err) {
+        console.error('Erro na chamada ao servidor:', err);
+      }
+
+      // guarda dados e redireciona
       sessionStorage.setItem("videoData", JSON.stringify(videoData));
       window.location.href = "/stream.html";
     }
+
 
     document.addEventListener("DOMContentLoaded", loadVideosCatalog);
   </script>

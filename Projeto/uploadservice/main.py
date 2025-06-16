@@ -70,6 +70,7 @@ def upload_video():
             "video": videofile.filename,
             "description": description,
             "duration": duration,
+            "views": 0
         })
 
         app.logger.info(f"Videos na Base de Dados: {videos_collection.find({})}")
