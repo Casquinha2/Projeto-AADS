@@ -36,8 +36,42 @@
       margin: 0;
     }
     #videos figcaption {
-      margin-top: 15px;
+      margin-top: 10px;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
     }
+
+    .video-info {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      padding: 0 10px;
+      box-sizing: border-box;
+    }
+
+    .video-info .left {
+      text-align: left;
+    }
+
+    .video-info .right {
+      text-align: right;
+    }
+
+    .video-title {
+      font-weight: bold;
+    }
+
+    .video-description,
+    .video-duration,
+    .video-views {
+      font-size: 14px;
+      color: #444;
+    }
+
+
   </style>
 </head>
 <body>
@@ -84,11 +118,20 @@
                 class="images"
                 onclick="videoSelected(this)">
               <figcaption>
-                <div class="video-title">${video.title}</div>
-                <div class="video-description">${video.description}</div>
-                <div class="video-duration">Duração: ${video.duration || "N/D"}</div>
+                <div class="video-info">
+                  <div class="left">
+                    <div class="video-title">${video.title}</div>
+                    <div class="video-description">${video.description}</div>
+                  </div>
+                  <div class="right">
+                    <div class="video-duration">Duração: ${video.duration || "N/D"}</div>
+                    <div class="video-views">Views: ${video.views}</div>
+                  </div>
+                </div>
               </figcaption>
             `;
+
+
             container.appendChild(figure);
           });
 
