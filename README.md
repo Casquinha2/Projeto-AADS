@@ -9,10 +9,10 @@ A adição, remoção e edição dos videos é feita no painel de administrador.
 Na edição dos videos pode'se mudar o nome, descrição, thumbnail e o video .mp4.
 
 ## Linguagens usadas no projeto
-- Python - usada para o backend da plataforma
-- HTML - usada para fazer o frontend
-- CSS - usada para fazer o design do frontend
-- JavaScript - usada para fazer a interligação entre o frontend e o backend
+- Python - usada para o backend da plataforma;
+- HTML - usada para fazer o frontend;
+- CSS - usada para fazer o design do frontend;
+- JavaScript - usada para fazer a interligação entre o frontend e o backend.
 
 Neste projeto ainda foi usado o Docker com os Kubernetes para simular vários serviços em diferentes máquinas.  
 
